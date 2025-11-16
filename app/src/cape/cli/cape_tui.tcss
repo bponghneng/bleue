@@ -1,0 +1,249 @@
+/* Cape TUI Stylesheet */
+
+Screen {
+    background: $surface;
+}
+
+/* Header and Title */
+#title {
+    content-align: center middle;
+    width: 100%;
+    height: 3;
+    background: $primary;
+    color: $text;
+    text-style: bold;
+}
+
+/* DataTable Styling */
+DataTable {
+    height: 1fr;
+}
+
+DataTable > .datatable--header {
+    background: $primary;
+    color: $text;
+    text-style: bold;
+}
+
+DataTable > .datatable--cursor {
+    background: $accent;
+}
+
+/* Status Colors */
+.status-pending {
+    color: $warning;
+}
+
+.status-started {
+    color: $accent;
+}
+
+.status-completed {
+    color: $success;
+}
+
+/* Modal Screens */
+ModalScreen {
+    align: center middle;
+}
+
+#create-issue-modal {
+    width: 98%;
+    height: 95%;
+    border: solid $primary;
+    background: $surface;
+    padding: 0 1;
+}
+
+#modal-header {
+    width: 100%;
+    height: 3;
+    content-align: center middle;
+    text-style: bold;
+    background: $primary;
+    color: $text;
+    margin-bottom: 1;
+}
+
+#description {
+    height: 1fr;
+    margin-bottom: 1;
+}
+
+#button-row {
+    width: 100%;
+    height: auto;
+    align-horizontal: center;
+}
+
+Button {
+    margin: 0 1;
+}
+
+/* Detail Screen */
+#detail-container {
+    height: 1fr;
+    padding: 1 2;
+}
+
+#detail-header {
+    width: 100%;
+    height: 3;
+    content-align: center middle;
+    text-style: bold;
+    background: $primary;
+    color: $text;
+    margin-bottom: 1;
+}
+
+#issue-content {
+    height: auto;
+    margin-bottom: 2;
+    padding: 1;
+    border: solid $primary;
+}
+
+#comments-header {
+    width: 100%;
+    height: 3;
+    content-align: left middle;
+    text-style: bold;
+    background: $accent;
+    color: $text;
+    margin-bottom: 1;
+}
+
+#comments-log, #comments-widget {
+    height: auto;
+    border: solid $primary;
+    padding: 1;
+    overflow-y: hidden;
+}
+
+CommentsWidget {
+    height: auto;
+    border: solid $primary;
+    padding: 1;
+    overflow-y: hidden;
+}
+
+/* Workflow Screen */
+#workflow-container {
+    height: 1fr;
+    padding: 1 2;
+}
+
+#workflow-title {
+    width: 100%;
+    height: 3;
+    content-align: center middle;
+    text-style: bold;
+    background: $primary;
+    color: $text;
+    margin-bottom: 1;
+}
+
+#workflow-progress {
+    width: 100%;
+    height: 3;
+    content-align: center middle;
+    background: $accent;
+    color: $text;
+    margin-bottom: 1;
+}
+
+.log {
+    height: 1fr;
+    overflow-y: scroll;
+    border: solid $primary;
+    padding: 1;
+}
+
+#workflow-log {
+    height: 1fr;
+    border: solid $primary;
+    padding: 1;
+}
+
+/* Edit Description Modal */
+#edit-description-modal {
+    width: 98%;
+    height: 95%;
+    border: solid $primary;
+    background: $surface;
+    padding: 0 1;
+}
+
+/* Confirm Delete Modal */
+#confirm-delete-modal {
+    width: 70;
+    height: 20;
+    border: thick $error;
+    background: $surface;
+    padding: 1 2;
+}
+
+#issue-preview {
+    width: 100%;
+    padding: 1;
+    margin-bottom: 1;
+    border: solid $primary;
+    background: $panel;
+}
+
+#delete-warning {
+    width: 100%;
+    content-align: center middle;
+    padding: 1;
+    margin-bottom: 1;
+    color: $error;
+    text-style: bold;
+}
+
+/* Help Screen */
+#help-modal {
+    width: 100;
+    height: 40;
+    border: thick $primary;
+    background: $surface;
+    padding: 1 2;
+}
+
+#help-content {
+    width: 100%;
+    height: 100%;
+    overflow-y: scroll;
+}
+
+/* IssueForm Widget */
+IssueForm {
+    height: 1fr;
+}
+
+/* Collapsible Widget for Description */
+Collapsible {
+    margin-bottom: 2;
+}
+
+Collapsible > Contents {
+    padding: 1;
+}
+
+/* Workflow sections */
+#workflows-header {
+    width: 100%;
+    height: 3;
+    content-align: left middle;
+    text-style: bold;
+    background: $accent;
+    color: $text;
+    margin-bottom: 1;
+    margin-top: 1;
+}
+
+#workflows-content {
+    height: auto;
+    margin-bottom: 2;
+    padding: 1;
+    border: solid $primary;
+}

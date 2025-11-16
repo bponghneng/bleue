@@ -1,0 +1,64 @@
+[project]
+name = "cape"
+version = "0.1.0"
+description = "Unified CLI, ADW runner, and worker tooling for the CAPE workflow"
+readme = "README.md"
+authors = [{ name = "Robert Pratt", email = "robert@bpong.me" }]
+requires-python = ">=3.12"
+dependencies = [
+    "typer>=0.12.0",
+    "textual>=0.50.0",
+    "supabase>=2.0",
+    "httpx>=0.27.2",
+    "postgrest>=0.14.6",
+    "pydantic>=2.0",
+    "python-dotenv>=1.0.0",
+    "psutil>=6.1.0",
+    "watchdog>=6.0.0",
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
+    "pytest-asyncio>=0.21.0",
+    "ruff>=0.14.5",
+    "black>=25.0.0",
+    "mypy>=1.18.2",
+]
+classifiers = ["Programming Language :: Python :: 3.12"]
+
+[project.scripts]
+cape = "cape.cli.cli:app"
+cape-adw = "cape.adw.cli:app"
+cape-worker = "cape.worker.cli:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/cape"]
+
+[tool.hatch.build.targets.wheel.force-include]
+"src/cape/cli/cape_tui.tcss" = "cape/cli/cape_tui.tcss"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+addopts = "--color=no"
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+src = ["src"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "W"]
+
+[tool.black]
+line-length = 100
+target-version = ["py312"]
+
+[tool.mypy]
+python_version = "3.12"
+ignore_missing_imports = true
+warn_unused_ignores = true
+mypy_path = ["src"]
+files = ["src"]
