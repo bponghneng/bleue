@@ -11,6 +11,7 @@ from typing import Dict, Optional
 
 from cape.core.agents.base import CodingAgent
 from cape.core.agents.claude import ClaudeAgent
+from cape.core.agents.opencode import OpenCodeAgent
 
 _DEFAULT_LOGGER = logging.getLogger(__name__)
 
@@ -84,6 +85,51 @@ def get_agent(provider: Optional[str] = None) -> CodingAgent:
     return _AGENTS[provider]
 
 
+def get_implement_provider() -> str:
+    """Get the provider name for the implementation step.
+
+    Provider selection priority:
+    1. CAPE_IMPLEMENT_PROVIDER environment variable
+    2. CAPE_AGENT_PROVIDER environment variable (fallback)
+    3. Default to "claude"
+
+    This function allows selective provider usage for the implementation
+    step while keeping classification and planning with Claude.
+
+    Returns:
+        Provider name string (e.g., "claude", "opencode")
+
+    Example:
+        # Use OpenCode for implementation
+        os.environ["CAPE_IMPLEMENT_PROVIDER"] = "opencode"
+        provider_name = get_implement_provider()  # Returns "opencode"
+
+        # Fallback to general provider setting
+        os.environ["CAPE_AGENT_PROVIDER"] = "opencode"
+        provider_name = get_implement_provider()  # Returns "opencode"
+
+        # Default behavior
+        provider_name = get_implement_provider()  # Returns "claude"
+    """
+    # Check CAPE_IMPLEMENT_PROVIDER first (most specific)
+    provider = os.getenv("CAPE_IMPLEMENT_PROVIDER")
+
+    # Fallback to CAPE_AGENT_PROVIDER
+    if provider is None:
+        provider = os.getenv("CAPE_AGENT_PROVIDER")
+
+    # Default to claude
+    if provider is None:
+        provider = "claude"
+
+    _DEFAULT_LOGGER.debug("Selected implementation provider: %s", provider)
+    return provider
+
+
 # Register default Claude provider
 register_agent("claude", ClaudeAgent())
 _DEFAULT_LOGGER.debug("Default Claude agent provider registered")
+
+# Register OpenCode provider
+register_agent("opencode", OpenCodeAgent())
+_DEFAULT_LOGGER.debug("OpenCode agent provider registered")

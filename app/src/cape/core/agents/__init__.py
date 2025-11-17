@@ -23,13 +23,16 @@ Example:
 
 from cape.core.agents.base import AgentExecuteRequest, AgentExecuteResponse, CodingAgent
 from cape.core.agents.claude import ClaudeAgent
-from cape.core.agents.registry import get_agent, register_agent
+from cape.core.agents.opencode import OpenCodeAgent
+from cape.core.agents.registry import get_agent, get_implement_provider, register_agent
 
 __all__ = [
     "CodingAgent",
     "AgentExecuteRequest",
     "AgentExecuteResponse",
     "ClaudeAgent",
+    "OpenCodeAgent",
     "get_agent",
+    "get_implement_provider",
     "register_agent",
 ]
