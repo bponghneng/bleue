@@ -232,8 +232,6 @@ def prompt_claude_code(request: AgentPromptRequest) -> AgentPromptResponse:
 
     # Ensure we use the locally authenticated Claude CLI (not API key fallback)
     env = os.environ.copy()
-    env.pop("ANTHROPIC_API_KEY", None)
-    env.pop("CLAUDE_API_KEY", None)
 
     try:
         stderr_lines: List[str] = []
