@@ -211,6 +211,7 @@ class OpenCodeAgent(CodingAgent):
             # Pass plan file content directly as prompt (no /implement prefix)
             cmd = [
                 OPENCODE_PATH,
+                "run",
                 "--model",
                 model,
                 "--command",
