@@ -5,8 +5,10 @@ from unittest.mock import Mock, PropertyMock, patch
 
 import pytest
 
-from cape.cli.tui import CommentsWidget, IssueDetailScreen, IssueForm
 from cape.core.models import CapeComment, CapeIssue
+from cape.tui.components.comments import CommentsWidget
+from cape.tui.components.issue_form import IssueForm
+from cape.tui.screens.issue_detail import IssueDetailScreen
 
 
 @pytest.fixture
@@ -471,7 +473,7 @@ def test_comments_section_visible_for_completed_issue(mock_issue_completed, mock
 
 def test_v_key_triggers_view_detail():
     """Test that 'v' key binding triggers action_view_detail method."""
-    from cape.cli.tui import IssueListScreen
+    from cape.tui.screens.issue_list import IssueListScreen
 
     # Create screen instance
     screen = IssueListScreen()
@@ -488,7 +490,7 @@ def test_v_key_triggers_view_detail():
 
 def test_enter_key_still_works():
     """Test that existing 'enter' key binding still works after adding 'v'."""
-    from cape.cli.tui import IssueListScreen
+    from cape.tui.screens.issue_list import IssueListScreen
 
     # Create screen instance
     screen = IssueListScreen()
@@ -505,7 +507,7 @@ def test_enter_key_still_works():
 
 def test_both_keys_map_to_same_action():
     """Test that both 'enter' and 'v' map to the same action."""
-    from cape.cli.tui import IssueListScreen
+    from cape.tui.screens.issue_list import IssueListScreen
 
     screen = IssueListScreen()
 

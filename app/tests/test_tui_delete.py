@@ -4,8 +4,10 @@ from unittest.mock import Mock
 
 import pytest
 
-from cape.cli.tui import ConfirmDeleteModal, IssueDetailScreen, IssueListScreen
 from cape.core.models import CapeIssue
+from cape.tui.screens.confirm_delete import ConfirmDeleteModal
+from cape.tui.screens.issue_detail import IssueDetailScreen
+from cape.tui.screens.issue_list import IssueListScreen
 
 
 @pytest.fixture
@@ -44,20 +46,6 @@ class TestConfirmDeleteModal:
         # Modal stores the full description
         assert modal.issue_description == long_desc
         # Truncation happens in compose() method when rendering
-
-
-class TestIssueListScreenDelete:
-    """Test cases for delete functionality in IssueListScreen."""
-
-    def test_delete_issue_function_importable(self):
-        """Test that delete_issue function is importable from both modules."""
-        from cape.cli.tui import delete_issue as tui_delete_issue
-        from cape.core.database import delete_issue as db_delete_issue
-
-        # Verify both imports work and refer to the same function
-        assert db_delete_issue is not None
-        assert tui_delete_issue is not None
-        assert db_delete_issue is tui_delete_issue
 
 
 class TestIssueDetailScreenDelete:
