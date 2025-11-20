@@ -12,7 +12,7 @@ import logging
 import os
 import subprocess
 import threading
-from typing import Any, Callable, Dict, List, Optional, Tuple
+from typing import Any, Callable, Dict, Iterable, List, Optional, Tuple
 
 from dotenv import load_dotenv
 
@@ -139,6 +139,56 @@ def convert_jsonl_to_json(jsonl_file: str) -> str:
 
     _DEFAULT_LOGGER.debug("Created JSON file: %s", json_file)
     return json_file
+
+
+def iter_opencode_items(line: str) -> Iterable[Dict[str, Any]]:
+    """Yield text/tool items parsed from an OpenCode CLI stdout line.
+
+    This function is critical for real-time streaming progress comments.
+    It parses JSONL lines and extracts relevant content items from OpenCode messages.
+    """
+    stripped = line.strip()
+    if not stripped:
+        return []
+
+    try:
+        parsed = json.loads(stripped)
+    except json.JSONDecodeError:
+        return []
+
+    msg_type = parsed.get("type")
+    if not msg_type:
+        return []
+
+    if msg_type == "text":
+        # Extract text content
+        part = parsed.get("part", {})
+        if not isinstance(part, dict):
+            return []
+
+        text = part.get("text", "")
+        if text:
+            yield {"type": "text", "text": text}
+
+    elif msg_type == "tool_use":
+        # Extract tool use
+        part = parsed.get("part", {})
+        if not isinstance(part, dict):
+            return []
+
+        tool_name = part.get("tool")
+        if tool_name:
+            # Construct item similar to Claude's tool_use for consistency
+            item = {
+                "type": "tool_use",
+                "name": tool_name,
+            }
+
+            state = part.get("state", {})
+            if isinstance(state, dict) and "input" in state:
+                item["input"] = state["input"]
+
+            yield item
 
 
 class OpenCodeAgent(CodingAgent):
