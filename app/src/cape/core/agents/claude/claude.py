@@ -16,7 +16,7 @@ from typing import Any, Callable, Dict, Iterable, List, Optional, Tuple
 from dotenv import load_dotenv
 
 from cape.core.agents.base import AgentExecuteRequest, AgentExecuteResponse, CodingAgent
-from cape.core.agents.claude_models import (
+from .claude_models import (
     ClaudeAgentPromptRequest,
     ClaudeAgentPromptResponse,
     ClaudeAgentTemplateRequest,
