@@ -16,36 +16,39 @@ class CreateIssueScreen(ModalScreen[Optional[int]]):
     def compose(self) -> ComposeResult:
         """Create child widgets for the create issue modal."""
         yield Container(
-            Static("Create New Issue", id="modal-header"),
+            Static("Create New Issue", id="modal_header"),
             IssueForm(
-                initial_text="Enter issue description...",
+                initial_title="Enter issue title ...",
+                initial_text="Enter issue description ...",
                 on_save_callback=self.handle_save,
                 on_cancel_callback=self.handle_cancel,
             ),
-            id="create-issue-modal",
+            id="modal_content",
         )
 
-    def handle_save(self, description: str) -> None:
+    def handle_save(self, description: str, title: str) -> None:
         """Handle save action from IssueForm.
 
         Args:
             description: Validated description text
+            title: Validated title text
         """
-        self.create_issue_handler(description)
+        self.create_issue_handler(description, title)
 
     def handle_cancel(self) -> None:
         """Handle cancel action from IssueForm."""
         self.dismiss(None)
 
     @work(exclusive=True, thread=True)
-    def create_issue_handler(self, description: str) -> None:
+    def create_issue_handler(self, description: str, title: str) -> None:
         """Create issue in background thread.
 
         Args:
             description: Issue description to save
+            title: Issue title to save
         """
         try:
-            issue = db_create_issue(description)
+            issue = db_create_issue(description, title=title)
             self.app.call_from_thread(self.dismiss, issue.id)
         except Exception as e:
             self.app.call_from_thread(self.notify, f"Error creating issue: {e}", severity="error")

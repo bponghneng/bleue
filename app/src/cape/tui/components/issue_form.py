@@ -1,6 +1,6 @@
 from textual.app import ComposeResult
 from textual.containers import Container, Horizontal
-from textual.widgets import Button, TextArea
+from textual.widgets import Button, Input, Rule, TextArea
 
 
 class IssueForm(Container):
@@ -20,19 +20,28 @@ class IssueForm(Container):
         ("escape", "cancel", "Cancel"),
     ]
 
-    def __init__(self, initial_text: str = "", on_save_callback=None, on_cancel_callback=None):
+    def __init__(
+        self,
+        initial_text: str = "",
+        initial_title: str = "",
+        on_save_callback=None,
+        on_cancel_callback=None,
+    ):
         """Initialize the form with optional callbacks."""
         super().__init__()
         self.initial_text = initial_text
+        self.initial_title = initial_title
         self.on_save_callback = on_save_callback
         self.on_cancel_callback = on_cancel_callback
 
     def compose(self) -> ComposeResult:
         """Create child widgets for the form."""
+        yield Input(id="title", placeholder="Enter issue title ...")
+        yield Rule(line_style="dashed", classes="divider")
         yield TextArea(id="description", language="markdown")
         yield Horizontal(
-            Button("Save", variant="success", id="save-btn"),
-            Button("Cancel", variant="error", id="cancel-btn"),
+            Button("Save", variant="success", compact=True, flat=True, id="save-btn"),
+            Button("Cancel", variant="error", compact=True, flat=True, id="cancel-btn"),
             id="button-row",
         )
 
@@ -52,7 +61,9 @@ class IssueForm(Container):
 
     def action_save(self) -> None:
         """Validate and trigger save callback."""
+        input_widget = self.query_one(Input)
         text_area = self.query_one(TextArea)
+        title = input_widget.value.strip()
         description = text_area.text.strip()
 
         # Validation
@@ -70,7 +81,7 @@ class IssueForm(Container):
 
         # Trigger callback if provided
         if self.on_save_callback:
-            self.on_save_callback(description)
+            self.on_save_callback(description, title)
 
     def action_cancel(self) -> None:
         """Trigger cancel callback."""
