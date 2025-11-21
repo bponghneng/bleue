@@ -32,6 +32,7 @@ class CapeIssue(BaseModel):
     """Cape issue model matching Supabase schema."""
 
     id: int
+    title: Optional[str] = None
     description: str = Field(..., min_length=1)
     status: Literal["pending", "started", "completed"] = "pending"
     assigned_to: Optional[Literal["alleycat-1", "tydirium-1"]] = None

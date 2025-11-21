@@ -208,12 +208,13 @@ def fetch_comments(issue_id: int) -> List[CapeComment]:
         raise ValueError(f"Failed to fetch comments for issue {issue_id}: {e}") from e
 
 
-def create_issue(description: str) -> CapeIssue:
+def create_issue(description: str, title: Optional[str] = None) -> CapeIssue:
     """Create a new Cape issue with the given description.
 
     Args:
         description: The issue description text. Will be trimmed of leading/trailing whitespace.
                     Must not be empty after trimming.
+        title: Optional title for the issue.
 
     Returns:
         CapeIssue: The created issue with database-generated id and timestamps.
@@ -237,6 +238,12 @@ def create_issue(description: str) -> CapeIssue:
         "description": description_clean,
         "status": "pending",
     }
+
+    if title:
+        title_clean = title.strip()
+        if len(title_clean) > 255:
+            raise ValueError("Issue title cannot exceed 255 characters")
+        issue_data["title"] = title_clean
 
     try:
         response = client.table("cape_issues").insert(issue_data).execute()
