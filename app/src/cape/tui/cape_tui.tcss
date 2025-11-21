@@ -1,32 +1,82 @@
 /* Cape TUI Stylesheet */
 
 Screen {
+    align: center middle;
     background: $surface;
 }
 
+ModalScreen {
+    background: $surface-darken-2 50%;
+}
+
+#content {
+    height: 1fr;
+    margin: 0 0 2 0;
+    width: auto;
+}
+
+#modal_content {
+    background: $surface;
+    height: 75%;
+    margin: 0 0 2 0;
+    padding: 1;
+    width: 75%;
+}
+
 /* Header and Title */
-#title {
-    content-align: center middle;
-    width: 100%;
-    height: 3;
-    background: $primary;
+#content_header {
+    border-bottom: double $accent;
+    content-align: left middle;
     color: $text;
+    margin: 2 0 1 0;
+    padding: 0 1;
     text-style: bold;
+    width: 100%;
+}
+
+#content_footer {
+    border-top: double $accent;
+    width: 100%;
+}
+
+#modal_header {
+    border-bottom: double $accent;
+    content-align: left middle;
+    color: $text;
+    margin: 0 0 1 0;
+    padding: 0 1;
+    text-style: bold;
+    width: 100%;
 }
 
 /* DataTable Styling */
 DataTable {
     height: 1fr;
+    width: auto;
 }
 
 DataTable > .datatable--header {
-    background: $primary;
+    background: $surface;
     color: $text;
     text-style: bold;
 }
 
 DataTable > .datatable--cursor {
-    background: $accent;
+    background: $accent-muted 35%;
+}
+
+/* Form Styling */
+Input, TextArea {
+    background: $surface-darken-1;
+}
+
+TextArea {
+    width: 100%;
+}
+
+.divider {
+    color: $surface-lighten-2 50%;
+    margin: 1 1;
 }
 
 /* Status Colors */
@@ -48,21 +98,10 @@ ModalScreen {
 }
 
 #create-issue-modal {
-    width: 98%;
-    height: 95%;
-    border: solid $primary;
+    width: 75%;
+    height: 50%;
     background: $surface;
     padding: 0 1;
-}
-
-#modal-header {
-    width: 100%;
-    height: 3;
-    content-align: center middle;
-    text-style: bold;
-    background: $primary;
-    color: $text;
-    margin-bottom: 1;
 }
 
 #description {

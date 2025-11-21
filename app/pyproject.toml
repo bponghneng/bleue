@@ -37,7 +37,7 @@ build-backend = "hatchling.build"
 packages = ["src/cape"]
 
 [tool.hatch.build.targets.wheel.force-include]
-"src/cape/cli/cape_tui.tcss" = "cape/cli/cape_tui.tcss"
+"src/cape/tui/cape_tui.tcss" = "cape/tui/cape_tui.tcss"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

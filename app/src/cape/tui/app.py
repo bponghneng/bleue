@@ -9,6 +9,8 @@ class CapeApp(App):
     """Main Cape TUI application."""
 
     CSS_PATH = None  # Will load dynamically from package
+    TITLE = "Cape Issue Management"
+    # ENABLE_COMMAND_PALETTE = False
 
     BINDINGS = [
         ("q", "quit", "Quit"),
@@ -22,22 +24,19 @@ class CapeApp(App):
         try:
             from importlib.resources import files
 
-            css_path = files("cape.cli").joinpath("cape_tui.tcss")
+            css_path = files("cape.tui").joinpath("cape_tui.tcss")
             self.CSS = css_path.read_text()
         except Exception:
             # Fallback: try to load from current directory (development mode)
             import os
 
             current_dir = os.path.dirname(__file__)
-            # Try to find the CSS file in the cli directory relative to this file
-            # This file is in cape/tui/app.py, so we need to go up one level to cape, then down to cli
-            css_file = os.path.join(
-                os.path.dirname(os.path.dirname(current_dir)), "cli", "cape_tui.tcss"
-            )
+            # Try to find the CSS file in the current directory
+            css_file = os.path.join(current_dir, "cape_tui.tcss")
 
             if not os.path.exists(css_file):
                 # Try the original location relative to where the script might be run
-                css_file = "cape/cli/cape_tui.tcss"
+                css_file = "cape/tui/cape_tui.tcss"
 
             if os.path.exists(css_file):
                 with open(css_file) as f:
