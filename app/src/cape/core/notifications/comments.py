@@ -1,4 +1,14 @@
-"""Notification helpers for Cape workflow events."""
+"""Comment utilities for Cape workflow notifications.
+
+This module provides utilities for inserting progress comments during
+workflow execution.
+
+Example:
+    from cape.core.notifications import insert_progress_comment
+
+    status, msg = insert_progress_comment(issue_id, "Starting implementation")
+    logger.debug(msg) if status == "success" else logger.error(msg)
+"""
 
 from cape.core.database import create_comment
 
