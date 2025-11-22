@@ -274,7 +274,8 @@ def execute_workflow(
     update_status(issue_id, "started", logger)
 
     # Insert progress comment - best-effort, non-blocking
-    insert_progress_comment(issue_id, "Workflow started - Issue fetched and validated", logger)
+    status, msg = insert_progress_comment(issue_id, "Workflow started - Issue fetched and validated")
+    logger.debug(msg) if status == "success" else logger.error(msg)
 
     # Classify the issue
     logger.info("\n=== Classifying issue ===")
@@ -304,7 +305,8 @@ def execute_workflow(
         )
     else:
         comment_text = f"Issue classified as {issue_command}"
-    insert_progress_comment(issue_id, comment_text, logger)
+    status, msg = insert_progress_comment(issue_id, comment_text)
+    logger.debug(msg) if status == "success" else logger.error(msg)
 
     # Build the implementation plan
     logger.info("\n=== Building implementation plan ===")
@@ -315,7 +317,8 @@ def execute_workflow(
     logger.info(" Implementation plan created")
 
     # Insert progress comment - best-effort, non-blocking
-    insert_progress_comment(issue_id, "Implementation plan created successfully", logger)
+    status, msg = insert_progress_comment(issue_id, "Implementation plan created successfully")
+    logger.debug(msg) if status == "success" else logger.error(msg)
 
     # Get the path to the plan file that was created
     logger.info("\n=== Finding plan file ===")
@@ -340,7 +343,8 @@ def execute_workflow(
     update_status(issue_id, "completed", logger)
 
     # Insert progress comment - best-effort, non-blocking
-    insert_progress_comment(issue_id, "Solution implemented successfully", logger)
+    status, msg = insert_progress_comment(issue_id, "Solution implemented successfully")
+    logger.debug(msg) if status == "success" else logger.error(msg)
 
     logger.info("\n=== Workflow completed successfully ===")
     return True

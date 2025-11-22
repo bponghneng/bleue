@@ -62,9 +62,10 @@ def prompt_claude_code(request: ClaudeAgentPromptRequest) -> ClaudeAgentPromptRe
 
     # Insert final progress comment if successful
     if response.success and response.raw_output_path:
-        insert_progress_comment(
-            request.issue_id, f"Output saved to: {response.raw_output_path}", logger
+        status, msg = insert_progress_comment(
+            request.issue_id, f"Output saved to: {response.raw_output_path}"
         )
+        logger.debug(msg) if status == "success" else logger.error(msg)
 
     # Map AgentExecuteResponse to ClaudeAgentPromptResponse
     return ClaudeAgentPromptResponse(
@@ -208,8 +209,9 @@ def execute_implement_plan(
 
     # Insert final progress comment if successful
     if response.success and response.raw_output_path:
-        insert_progress_comment(
-            issue_id, f"Implementation complete. Output saved to: {response.raw_output_path}", logger
+        status, msg = insert_progress_comment(
+            issue_id, f"Implementation complete. Output saved to: {response.raw_output_path}"
         )
+        logger.debug(msg) if status == "success" else logger.error(msg)
 
     return response
