@@ -8,21 +8,6 @@ from typing import Literal, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
-# Deprecated - use cape.core.agents.claude.claude_models instead
-# These aliases are provided for backward compatibility during migration
-from cape.core.agents.claude import (
-    ClaudeAgentPromptRequest as AgentPromptRequest,  # noqa: F401
-)
-from cape.core.agents.claude import (
-    ClaudeAgentPromptResponse as AgentPromptResponse,  # noqa: F401
-)
-from cape.core.agents.claude import (
-    ClaudeAgentResultMessage as ClaudeCodeResultMessage,  # noqa: F401
-)
-from cape.core.agents.claude import (
-    ClaudeAgentTemplateRequest as AgentTemplateRequest,  # noqa: F401
-)
-
 # All slash commands used in the Cape workflow system
 SlashCommand = Literal[
     "/implement",

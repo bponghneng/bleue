@@ -6,14 +6,9 @@ from typing import Dict, Optional, Tuple, cast
 
 from cape.core.agent import execute_implement_plan, execute_template
 from cape.core.agents import AgentExecuteResponse
+from cape.core.agents.claude import ClaudeAgentPromptResponse, ClaudeAgentTemplateRequest
 from cape.core.database import fetch_issue, update_issue_status
-from cape.core.models import (
-    AgentPromptResponse,
-    AgentTemplateRequest,
-    CapeComment,
-    CapeIssue,
-    SlashCommand,
-)
+from cape.core.models import CapeComment, CapeIssue, SlashCommand
 from cape.core.notifications import insert_progress_comment
 
 # Agent names
@@ -51,7 +46,7 @@ def classify_issue(
         Tuple of (command, classification_data, error_message)
         where only one of classification_data/error_message is set.
     """
-    request = AgentTemplateRequest(
+    request = ClaudeAgentTemplateRequest(
         agent_name=AGENT_CLASSIFIER,
         slash_command="/triage:classify",
         args=[issue.description],
@@ -113,7 +108,7 @@ def classify_issue(
 
 def build_plan(
     issue: CapeIssue, command: SlashCommand, adw_id: str, logger: Logger
-) -> AgentPromptResponse:
+) -> ClaudeAgentPromptResponse:
     """Build implementation plan for the issue using the specified command.
 
     Args:
@@ -125,7 +120,7 @@ def build_plan(
     Returns:
         Agent response with plan output
     """
-    request = AgentTemplateRequest(
+    request = ClaudeAgentTemplateRequest(
         agent_name=AGENT_PLANNER,
         slash_command=command,
         args=[issue.description],
@@ -158,7 +153,7 @@ def get_plan_file(
     Returns:
         Tuple of (file_path, error_message) where one will be None
     """
-    request = AgentTemplateRequest(
+    request = ClaudeAgentTemplateRequest(
         agent_name=AGENT_PLAN_FINDER,
         slash_command="/triage:find-plan-file",
         args=[plan_output],
@@ -194,7 +189,7 @@ def get_plan_file(
 
 def implement_plan(
     plan_file: str, issue_id: int, adw_id: str, logger: Logger
-) -> AgentPromptResponse:
+) -> ClaudeAgentPromptResponse:
     """Implement the plan using configured provider.
 
     Uses the provider configured via CAPE_IMPLEMENT_PROVIDER environment variable.
@@ -224,8 +219,8 @@ def implement_plan(
         response.session_id,
     )
 
-    # Map AgentExecuteResponse to AgentPromptResponse for compatibility
-    return AgentPromptResponse(
+    # Map AgentExecuteResponse to ClaudeAgentPromptResponse for compatibility
+    return ClaudeAgentPromptResponse(
         output=response.output,
         success=response.success,
         session_id=response.session_id,

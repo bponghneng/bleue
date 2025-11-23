@@ -2,7 +2,8 @@
 
 import pytest
 
-from cape.core.models import AgentPromptRequest, AgentTemplateRequest, CapeComment, CapeIssue
+from cape.core.agents.claude import ClaudeAgentPromptRequest, ClaudeAgentTemplateRequest
+from cape.core.models import CapeComment, CapeIssue
 
 
 def test_cape_issue_creation():
@@ -66,8 +67,8 @@ def test_cape_comment_empty_validation():
 
 
 def test_agent_prompt_request():
-    """Test AgentPromptRequest creation."""
-    request = AgentPromptRequest(
+    """Test ClaudeAgentPromptRequest creation."""
+    request = ClaudeAgentPromptRequest(
         prompt="Test prompt",
         adw_id="test123",
         issue_id=42,
@@ -82,8 +83,8 @@ def test_agent_prompt_request():
 
 
 def test_agent_template_request():
-    """Test AgentTemplateRequest creation."""
-    request = AgentTemplateRequest(
+    """Test ClaudeAgentTemplateRequest creation."""
+    request = ClaudeAgentTemplateRequest(
         agent_name="ops",
         slash_command="/implement",
         args=["plan.md"],
