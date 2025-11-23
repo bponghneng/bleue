@@ -145,53 +145,61 @@ def execute_workflow(
         return False
     logger.info(" Solution implemented")
 
-    # Parse implementation output to extract metadata
-    logger.info("\n=== Parsing implementation output ===")
-    parsed_metadata = parse_implement_output(implement_response.output, logger)
+    # Log implementation output (deprecated parsing function)
+    logger.info("\n=== Logging implementation output ===")
+    parse_implement_output(implement_response.output, logger)
 
-    if parsed_metadata:
-        logger.info(f"Implementation metadata extracted: {parsed_metadata.get('summary', 'No summary')}")
-        logger.debug(f"Files modified: {parsed_metadata.get('files_modified', [])}")
+    # Find the plan file that was implemented
+    logger.info("\n=== Finding implemented plan file ===")
+    implemented_plan_path, error = get_plan_file(implement_response.output, issue_id, adw_id, logger)
+    if error:
+        logger.error(f"Error finding implemented plan file: {error}")
+        # Fall back to the original plan file path
+        logger.warning(f"Falling back to original plan file: {plan_file_path}")
+        implemented_plan_path = plan_file_path
+    elif implemented_plan_path is None:
+        logger.warning("Could not determine implemented plan file, using original")
+        implemented_plan_path = plan_file_path
+    else:
+        logger.info(f"Implemented plan file: {implemented_plan_path}")
 
-        # Derive paths from the plan file
-        paths = derive_paths_from_plan(parsed_metadata.get("path", plan_file_path))
-        review_file = paths["review_file"]
+    # Derive paths from the implemented plan file
+    paths = derive_paths_from_plan(implemented_plan_path)
+    review_file = paths["review_file"]
 
-        # Generate CodeRabbit review
-        logger.info("\n=== Generating CodeRabbit review ===")
-        working_dir = get_working_dir()
-        repo_path = get_repo_path()
+    # Generate CodeRabbit review
+    logger.info("\n=== Generating CodeRabbit review ===")
+    working_dir = get_working_dir()
+    repo_path = get_repo_path()
 
-        review_success, review_text = generate_review(
+    review_success, review_text = generate_review(
+        review_file,
+        working_dir,
+        repo_path,
+        issue_id,
+        logger
+    )
+
+    if not review_success:
+        logger.error("Failed to generate CodeRabbit review")
+        # Continue workflow even if review fails - it's optional
+    else:
+        logger.info(f"CodeRabbit review generated successfully at {review_file}")
+
+        # Notify the /address-review-issues template
+        logger.info("\n=== Notifying review template ===")
+        notify_success = notify_review_template(
             review_file,
-            working_dir,
-            repo_path,
             issue_id,
+            adw_id,
             logger
         )
 
-        if not review_success:
-            logger.error("Failed to generate CodeRabbit review")
-            # Continue workflow even if review fails - it's optional
+        if not notify_success:
+            logger.error("Failed to notify review template")
+            # Continue workflow even if notification fails
         else:
-            logger.info(f"CodeRabbit review generated successfully at {review_file}")
-
-            # Notify the /address-review-issues template
-            logger.info("\n=== Notifying review template ===")
-            notify_success = notify_review_template(
-                review_file,
-                issue_id,
-                adw_id,
-                logger
-            )
-
-            if not notify_success:
-                logger.error("Failed to notify review template")
-                # Continue workflow even if notification fails
-            else:
-                logger.info("Review template notified successfully")
-    else:
-        logger.warning("Could not parse implementation output, skipping review generation")
+            logger.info("Review template notified successfully")
 
     # Update status to "completed" - best-effort, non-blocking
     update_status(issue_id, "completed", logger)

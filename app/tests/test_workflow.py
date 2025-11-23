@@ -200,11 +200,15 @@ def test_implement_plan_success(mock_execute, mock_logger):
 @patch("cape.core.workflow.runner.build_plan")
 @patch("cape.core.workflow.runner.get_plan_file")
 @patch("cape.core.workflow.runner.implement_plan")
+@patch("cape.core.workflow.runner.generate_review")
+@patch("cape.core.workflow.runner.notify_review_template")
 @patch("cape.core.workflow.runner.insert_progress_comment")
 @patch("cape.core.workflow.runner.update_status")
 def test_execute_workflow_success(
     mock_update_status,
     mock_insert_comment,
+    mock_notify_review,
+    mock_generate_review,
     mock_implement,
     mock_get_file,
     mock_build,
@@ -223,6 +227,9 @@ def test_execute_workflow_success(
     mock_implement.return_value = ClaudeAgentPromptResponse(
         output="Done", success=True, session_id="test"
     )
+    # Mock review generation
+    mock_generate_review.return_value = (True, "Review text")
+    mock_notify_review.return_value = True
     # Mock insert_progress_comment to return success tuples
     mock_insert_comment.return_value = ("success", "Comment inserted successfully")
 
@@ -232,6 +239,9 @@ def test_execute_workflow_success(
     assert mock_update_status.call_count == 2  # status updated to "started" and "completed"
     mock_update_status.assert_any_call(1, "started", mock_logger)
     mock_update_status.assert_any_call(1, "completed", mock_logger)
+    # Verify review steps were called
+    mock_generate_review.assert_called_once()
+    mock_notify_review.assert_called_once()
 
 
 @patch("cape.core.workflow.runner.fetch_issue")
@@ -255,42 +265,15 @@ def test_execute_workflow_classify_failure(mock_classify, mock_fetch, mock_logge
     assert result is False
 
 
-def test_parse_implement_output_success(mock_logger):
-    """Test successful parsing of implementation output."""
-    output = """{
-        "summary": "Fixed the bug",
-        "files_modified": ["file1.py", "file2.py"],
-        "path": "specs/chore-fix-bug-plan.md",
-        "git_diff_stat": "2 files changed, 10 insertions(+), 5 deletions(-)",
-        "status": "completed"
-    }"""
+def test_parse_implement_output_deprecated(mock_logger):
+    """Test that parse_implement_output is deprecated and just logs output."""
+    output = "Implementation complete with conversational text"
 
     result = parse_implement_output(output, mock_logger)
-    assert result is not None
-    assert result["summary"] == "Fixed the bug"
-    assert len(result["files_modified"]) == 2
-    assert result["path"] == "specs/chore-fix-bug-plan.md"
-
-
-def test_parse_implement_output_invalid_json(mock_logger):
-    """Test parsing with invalid JSON."""
-    output = "not valid json"
-
-    result = parse_implement_output(output, mock_logger)
-    assert result is None
-    mock_logger.error.assert_called()
-
-
-def test_parse_implement_output_missing_fields(mock_logger):
-    """Test parsing with missing required fields."""
-    output = """{
-        "summary": "Fixed the bug",
-        "files_modified": ["file1.py"]
-    }"""
-
-    result = parse_implement_output(output, mock_logger)
-    assert result is None
-    mock_logger.error.assert_called()
+    # Function is deprecated and returns empty dict
+    assert result == {}
+    # Should log debug messages
+    mock_logger.debug.assert_called()
 
 
 def test_derive_paths_from_plan():

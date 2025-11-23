@@ -41,7 +41,9 @@ def test_setup_logger(tmp_path, monkeypatch):
     # Check handlers
     assert len(logger.handlers) == 2
 
-    # Clean up
+    # Clean up - close handlers before clearing
+    for handler in logger.handlers:
+        handler.close()
     logger.handlers.clear()
 
 
@@ -60,7 +62,9 @@ def test_setup_logger_file_handler(tmp_path, monkeypatch):
     assert "Debug message" in content
     assert "Info message" in content
 
-    # Clean up
+    # Clean up - close handlers before clearing
+    for handler in logger.handlers:
+        handler.close()
     logger.handlers.clear()
 
 

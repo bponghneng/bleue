@@ -11,51 +11,23 @@ from cape.core.workflow.shared import AGENT_IMPLEMENTOR
 
 
 def parse_implement_output(output: str, logger: Logger) -> Optional[Dict]:
-    """Parse implementation output as JSON and validate required fields.
+    """Log implementation output for debugging.
+
+    This function no longer parses JSON. The plan file path is now discovered
+    using the find-plan-file command in the workflow.
 
     Args:
         output: The raw output from the implementation
         logger: Logger instance
 
     Returns:
-        Parsed dict on success, None if malformed or validation fails
+        Empty dict for backward compatibility (deprecated)
     """
-    try:
-        # Try to parse the output as JSON
-        parsed = json.loads(output)
+    logger.debug("Implementation output logged")
+    logger.debug(f"Output preview: {output[:200]}...")
 
-        # Validate it's a dict
-        if not isinstance(parsed, dict):
-            logger.error("Implementation output is not a JSON object")
-            return None
-
-        # Validate required fields
-        required_fields = ["summary", "files_modified", "planPath", "git_diff_stat", "status"]
-        missing_fields = []
-
-        for field in required_fields:
-            if field not in parsed:
-                missing_fields.append(field)
-
-        if missing_fields:
-            logger.error(f"Implementation output missing required fields: {missing_fields}")
-            return None
-
-        # Validate files_modified is a list
-        if not isinstance(parsed["files_modified"], list):
-            logger.error("Implementation output 'files_modified' is not a list")
-            return None
-
-        logger.debug(f"Successfully parsed implementation output with {len(parsed['files_modified'])} modified files")
-        return parsed
-
-    except json.JSONDecodeError as e:
-        logger.error(f"Failed to parse implementation output as JSON: {e}")
-        logger.debug(f"Raw output was: {output[:500]}...")  # Log first 500 chars for debugging
-        return None
-    except Exception as e:
-        logger.error(f"Unexpected error parsing implementation output: {e}")
-        return None
+    # Return empty dict for backward compatibility
+    return {}
 
 
 def implement_plan(
