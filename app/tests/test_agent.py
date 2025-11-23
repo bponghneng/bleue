@@ -13,8 +13,10 @@ from cape.core.agents.claude import (
     parse_jsonl_output,
     save_prompt,
 )
-from cape.core.agents.claude_models import (
+from cape.core.agents.claude.claude_models import (
     ClaudeAgentPromptRequest as AgentPromptRequest,
+)
+from cape.core.agents.claude.claude_models import (
     ClaudeAgentTemplateRequest as AgentTemplateRequest,
 )
 
@@ -103,10 +105,16 @@ def test_save_prompt(tmp_path, monkeypatch):
     assert expected_file.read_text() == "/implement plan.md"
 
 
-@patch("cape.core.notifications.create_comment")
-@patch("cape.core.agents.claude.check_claude_installed")
+@patch("cape.core.notifications.comments.create_comment")
+@patch("cape.core.agents.claude.claude.check_claude_installed")
 @patch("subprocess.Popen")
-def test_prompt_claude_code_success(mock_popen, mock_check, mock_create_comment, tmp_path, monkeypatch):
+def test_prompt_claude_code_success(
+    mock_popen,
+    mock_check,
+    mock_create_comment,
+    tmp_path,
+    monkeypatch,
+):
     """Test successful Claude Code execution."""
     monkeypatch.setenv("CAPE_AGENTS_DIR", str(tmp_path))
     mock_check.return_value = None
@@ -144,8 +152,8 @@ def test_prompt_claude_code_success(mock_popen, mock_check, mock_create_comment,
     assert mock_create_comment.called
 
 
-@patch("cape.core.notifications.create_comment")
-@patch("cape.core.agents.claude.check_claude_installed")
+@patch("cape.core.notifications.comments.create_comment")
+@patch("cape.core.agents.claude.claude.check_claude_installed")
 def test_prompt_claude_code_cli_not_installed(mock_check, mock_create_comment):
     """Test handling of Claude Code CLI not installed."""
     mock_check.return_value = "Error: Claude Code CLI is not installed"
@@ -163,7 +171,7 @@ def test_prompt_claude_code_cli_not_installed(mock_check, mock_create_comment):
     mock_create_comment.assert_not_called()
 
 
-@patch("cape.core.agents.claude.check_claude_installed")
+@patch("cape.core.agents.claude.claude.check_claude_installed")
 @patch("subprocess.Popen")
 def test_execute_template(mock_popen, mock_check, tmp_path, monkeypatch):
     """Test executing template with slash command."""

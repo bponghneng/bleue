@@ -222,10 +222,12 @@ def test_issue_form_validation_empty_description():
     mock_screen = Mock()
     mock_textarea = Mock()
     mock_textarea.text = ""
+    mock_input = Mock()
+    mock_input.value = "Test title"
 
     # Use PropertyMock to mock the screen property
     with patch.object(type(form), "screen", new_callable=PropertyMock, return_value=mock_screen):
-        form.query_one = Mock(return_value=mock_textarea)
+        form.query_one = Mock(side_effect=[mock_input, mock_textarea])
 
         # Trigger save action
         form.action_save()
@@ -245,10 +247,12 @@ def test_issue_form_validation_placeholder_text():
     mock_screen = Mock()
     mock_textarea = Mock()
     mock_textarea.text = "Enter issue description..."
+    mock_input = Mock()
+    mock_input.value = "Test title"
 
     # Use PropertyMock to mock the screen property
     with patch.object(type(form), "screen", new_callable=PropertyMock, return_value=mock_screen):
-        form.query_one = Mock(return_value=mock_textarea)
+        form.query_one = Mock(side_effect=[mock_input, mock_textarea])
 
         # Trigger save action
         form.action_save()
@@ -267,10 +271,12 @@ def test_issue_form_validation_too_short():
     mock_screen = Mock()
     mock_textarea = Mock()
     mock_textarea.text = "Short"  # 5 characters
+    mock_input = Mock()
+    mock_input.value = "Test title"
 
     # Use PropertyMock to mock the screen property
     with patch.object(type(form), "screen", new_callable=PropertyMock, return_value=mock_screen):
-        form.query_one = Mock(return_value=mock_textarea)
+        form.query_one = Mock(side_effect=[mock_input, mock_textarea])
 
         # Trigger save action
         form.action_save()
@@ -290,10 +296,12 @@ def test_issue_form_validation_too_long():
     mock_screen = Mock()
     mock_textarea = Mock()
     mock_textarea.text = "x" * 10001  # 10,001 characters
+    mock_input = Mock()
+    mock_input.value = "Test title"
 
     # Use PropertyMock to mock the screen property
     with patch.object(type(form), "screen", new_callable=PropertyMock, return_value=mock_screen):
-        form.query_one = Mock(return_value=mock_textarea)
+        form.query_one = Mock(side_effect=[mock_input, mock_textarea])
 
         # Trigger save action
         form.action_save()
@@ -313,13 +321,15 @@ def test_issue_form_validation_valid_description():
     mock_textarea = Mock()
     valid_description = "This is a valid description that is long enough"
     mock_textarea.text = valid_description
-    form.query_one = Mock(return_value=mock_textarea)
+    mock_input = Mock()
+    mock_input.value = "Valid title"
+    form.query_one = Mock(side_effect=[mock_input, mock_textarea])
 
     # Trigger save action
     form.action_save()
 
     # Verify callback WAS called with cleaned description
-    save_callback.assert_called_once_with(valid_description)
+    save_callback.assert_called_once_with(valid_description, "Valid title")
 
 
 def test_issue_form_cancel_callback():

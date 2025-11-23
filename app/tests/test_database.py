@@ -17,6 +17,7 @@ from cape.core.database import (
     update_issue_description,
     update_issue_status,
 )
+from cape.core.models import CapeComment
 
 
 @pytest.fixture
@@ -183,13 +184,31 @@ def test_create_comment_success(mock_get_client):
 
     mock_client.table.return_value = mock_table
     mock_table.insert.return_value = mock_insert
-    mock_execute.data = [{"id": 1, "issue_id": 1, "comment": "Test comment"}]
+    mock_execute.data = [{
+        "id": 1,
+        "issue_id": 1,
+        "comment": "Test comment",
+        "raw": {"test": "data"},
+        "source": "test",
+        "type": "unit"
+    }]
     mock_insert.execute.return_value = mock_execute
     mock_get_client.return_value = mock_client
 
-    comment = create_comment(1, "Test comment")
+    comment_payload = CapeComment(
+        issue_id=1,
+        comment="Test comment",
+        raw={"test": "data"},
+        source="test",
+        type="unit",
+    )
+
+    comment = create_comment(comment_payload)
     assert comment.issue_id == 1
     assert comment.comment == "Test comment"
+    assert comment.raw == {"test": "data"}
+    assert comment.source == "test"
+    assert comment.type == "unit"
 
 
 @patch("cape.core.database.get_client")

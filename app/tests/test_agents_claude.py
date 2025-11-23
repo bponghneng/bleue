@@ -4,8 +4,6 @@ import json
 from io import StringIO
 from unittest.mock import Mock, patch
 
-import pytest
-
 from cape.core.agents.base import AgentExecuteRequest
 from cape.core.agents.claude import (
     ClaudeAgent,
@@ -135,7 +133,7 @@ def test_save_prompt(tmp_path, monkeypatch):
     assert expected_file.read_text() == "/implement plan.md"
 
 
-@patch("cape.core.agents.claude.check_claude_installed")
+@patch("cape.core.agents.claude.claude.check_claude_installed")
 @patch("subprocess.Popen")
 def test_claude_agent_execute_prompt_success(mock_popen, mock_check, tmp_path, monkeypatch):
     """Test successful ClaudeAgent execution."""
@@ -176,7 +174,7 @@ def test_claude_agent_execute_prompt_success(mock_popen, mock_check, tmp_path, m
     assert response.raw_output_path is not None
 
 
-@patch("cape.core.agents.claude.check_claude_installed")
+@patch("cape.core.agents.claude.claude.check_claude_installed")
 def test_claude_agent_execute_prompt_cli_not_installed(mock_check):
     """Test ClaudeAgent handles CLI not installed."""
     mock_check.return_value = "Error: Claude Code CLI is not installed"
@@ -195,7 +193,7 @@ def test_claude_agent_execute_prompt_cli_not_installed(mock_check):
     assert response.error_detail is not None
 
 
-@patch("cape.core.agents.claude.check_claude_installed")
+@patch("cape.core.agents.claude.claude.check_claude_installed")
 @patch("subprocess.Popen")
 def test_claude_agent_execute_prompt_with_stream_handler(
     mock_popen, mock_check, tmp_path, monkeypatch
@@ -241,7 +239,7 @@ def test_claude_agent_execute_prompt_with_stream_handler(
     assert len(handler_calls) > 0
 
 
-@patch("cape.core.agents.claude.check_claude_installed")
+@patch("cape.core.agents.claude.claude.check_claude_installed")
 @patch("subprocess.Popen")
 def test_claude_agent_execute_prompt_error_handling(
     mock_popen, mock_check, tmp_path, monkeypatch

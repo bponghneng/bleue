@@ -2,6 +2,7 @@
 
 import json
 import subprocess
+from io import StringIO
 from unittest.mock import Mock, patch
 
 from cape.core.agents.base import AgentExecuteRequest
@@ -157,8 +158,8 @@ def test_opencode_agent_execute_prompt_success(mock_popen, mock_check, tmp_path,
     # Create mock process
     mock_process = Mock()
     mock_process.returncode = 0
-    mock_process.stdout = [json.dumps(result_msg) + "\n"]
-    mock_process.stderr = []
+    mock_process.stdout = StringIO(json.dumps(result_msg) + "\n")
+    mock_process.stderr = StringIO("")
     mock_popen.return_value = mock_process
 
     # Execute
@@ -187,8 +188,8 @@ def test_opencode_agent_execute_prompt_error(mock_popen, mock_check, tmp_path, m
     # Mock failed execution
     mock_process = Mock()
     mock_process.returncode = 1
-    mock_process.stdout = ['{"type": "message", "data": "processing..."}\n']
-    mock_process.stderr = ["Error: Something went wrong\n"]
+    mock_process.stdout = StringIO('{"type": "message", "data": "processing..."}\n')
+    mock_process.stderr = StringIO("Error: Something went wrong\n")
     mock_popen.return_value = mock_process
 
     # Execute
@@ -236,8 +237,8 @@ def test_opencode_agent_with_stream_handler(mock_popen, mock_check, tmp_path, mo
     result_msg = {"type": "result", "is_error": False, "result": "Done", "session_id": "123"}
     mock_process = Mock()
     mock_process.returncode = 0
-    mock_process.stdout = [json.dumps(result_msg) + "\n"]
-    mock_process.stderr = []
+    mock_process.stdout = StringIO(json.dumps(result_msg) + "\n")
+    mock_process.stderr = StringIO("")
     mock_popen.return_value = mock_process
 
     # Create stream handler
@@ -272,8 +273,8 @@ def test_opencode_command_construction(mock_popen, mock_check, tmp_path, monkeyp
     # Mock process
     mock_process = Mock()
     mock_process.returncode = 0
-    mock_process.stdout = []
-    mock_process.stderr = []
+    mock_process.stdout = StringIO("")
+    mock_process.stderr = StringIO("")
     mock_popen.return_value = mock_process
 
     # Execute
@@ -307,8 +308,8 @@ def test_opencode_model_selection(mock_popen, mock_check, tmp_path, monkeypatch)
 
     mock_process = Mock()
     mock_process.returncode = 0
-    mock_process.stdout = []
-    mock_process.stderr = []
+    mock_process.stdout = StringIO("")
+    mock_process.stderr = StringIO("")
     mock_popen.return_value = mock_process
 
     # Execute with custom model
@@ -364,8 +365,8 @@ def test_opencode_agent_stream_handler_exception(
     result_msg = {"type": "result", "is_error": False, "result": "Done"}
     mock_process = Mock()
     mock_process.returncode = 0
-    mock_process.stdout = [json.dumps(result_msg) + "\n"]
-    mock_process.stderr = []
+    mock_process.stdout = StringIO(json.dumps(result_msg) + "\n")
+    mock_process.stderr = StringIO("")
     mock_popen.return_value = mock_process
 
     # Stream handler that raises exception
