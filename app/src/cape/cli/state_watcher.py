@@ -9,7 +9,7 @@ import time
 from pathlib import Path
 from typing import Callable, Dict, Optional
 
-from watchdog.events import FileSystemEventHandler
+from watchdog.events import FileSystemEvent, FileSystemEventHandler
 from watchdog.observers import Observer
 
 from cape.core.paths import CapePaths
@@ -18,7 +18,7 @@ from cape.core.paths import CapePaths
 class StateFileEventHandler(FileSystemEventHandler):
     """Handle file system events for state files."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.callbacks: Dict[str, Callable[[str], None]] = {}
         self.last_event_time: Dict[str, float] = {}
@@ -44,17 +44,19 @@ class StateFileEventHandler(FileSystemEventHandler):
         self.callbacks.pop(workflow_id, None)
         self.last_event_time.pop(workflow_id, None)
 
-    def on_modified(self, event):
+    def on_modified(self, event: FileSystemEvent) -> None:
         """Handle file modification events."""
         if event.is_directory:
             return
 
+        src_path = str(event.src_path)
+
         # Check if this is a state file
-        if not event.src_path.endswith(".json"):
+        if not src_path.endswith(".json"):
             return
 
         # Extract workflow ID from filename
-        workflow_id = Path(event.src_path).stem
+        workflow_id = Path(src_path).stem
 
         # Check if we have a callback for this workflow
         callback = self.callbacks.get(workflow_id)
@@ -81,7 +83,7 @@ class StateFileEventHandler(FileSystemEventHandler):
 class StateWatcher:
     """Watch workflow state files for changes."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the state watcher."""
         self.event_handler = StateFileEventHandler()
         self.observer: Optional[Observer] = None
@@ -116,9 +118,10 @@ class StateWatcher:
         state_dir.mkdir(parents=True, exist_ok=True)
 
         # Create observer and start watching
-        self.observer = Observer()
-        self.observer.schedule(self.event_handler, str(state_dir), recursive=False)
-        self.observer.start()
+        observer = Observer()
+        observer.schedule(self.event_handler, str(state_dir), recursive=False)
+        observer.start()
+        self.observer = observer
 
     def stop(self) -> None:
         """Stop watching for state file changes."""
@@ -133,11 +136,11 @@ class StateWatcher:
         """Check if the watcher is running."""
         return self.observer is not None and self.observer.is_alive()
 
-    def __enter__(self):
+    def __enter__(self) -> "StateWatcher":
         """Context manager entry."""
         self.start()
         return self
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    def __exit__(self, exc_type, exc_val, exc_tb) -> None:
         """Context manager exit."""
         self.stop()
