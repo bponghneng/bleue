@@ -41,14 +41,14 @@ def generate_review(
         cmd = [
             "coderabbit",
             "review",
-            "--cwd", working_dir,
-            "--config", f"{working_dir}/.coderabbit.yaml",
+            "--config", f"{repo_path}/.coderabbit.yaml",
             "--prompt-only"
         ]
 
         logger.debug(f"Executing CodeRabbit command: {' '.join(cmd)}")
+        logger.debug(f"Running from directory: {repo_path}")
 
-        # Execute CodeRabbit review
+        # Execute CodeRabbit review from repo_path
         result = subprocess.run(
             cmd,
             cwd=repo_path,
