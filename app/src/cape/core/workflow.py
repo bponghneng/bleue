@@ -4,12 +4,13 @@ import json
 from logging import Logger
 from typing import Dict, Optional, Tuple, cast
 
-from cape.core.agent import execute_template, execute_implement_plan
+from cape.core.agent import execute_implement_plan, execute_template
 from cape.core.agents import AgentExecuteResponse
 from cape.core.database import fetch_issue, update_issue_status
 from cape.core.models import (
     AgentPromptResponse,
     AgentTemplateRequest,
+    CapeComment,
     CapeIssue,
     SlashCommand,
 )
@@ -274,7 +275,14 @@ def execute_workflow(
     update_status(issue_id, "started", logger)
 
     # Insert progress comment - best-effort, non-blocking
-    status, msg = insert_progress_comment(issue_id, "Workflow started - Issue fetched and validated")
+    comment = CapeComment(
+        issue_id=issue_id,
+        comment="Workflow started - Issue fetched and validated",
+        raw={},
+        source="system",
+        type="workflow"
+    )
+    status, msg = insert_progress_comment(comment)
     logger.debug(msg) if status == "success" else logger.error(msg)
 
     # Classify the issue
@@ -305,7 +313,14 @@ def execute_workflow(
         )
     else:
         comment_text = f"Issue classified as {issue_command}"
-    status, msg = insert_progress_comment(issue_id, comment_text)
+    comment = CapeComment(
+        issue_id=issue_id,
+        comment=comment_text,
+        raw={},
+        source="system",
+        type="workflow"
+    )
+    status, msg = insert_progress_comment(comment)
     logger.debug(msg) if status == "success" else logger.error(msg)
 
     # Build the implementation plan
@@ -317,7 +332,14 @@ def execute_workflow(
     logger.info(" Implementation plan created")
 
     # Insert progress comment - best-effort, non-blocking
-    status, msg = insert_progress_comment(issue_id, "Implementation plan created successfully")
+    comment = CapeComment(
+        issue_id=issue_id,
+        comment="Implementation plan created successfully",
+        raw={},
+        source="system",
+        type="workflow"
+    )
+    status, msg = insert_progress_comment(comment)
     logger.debug(msg) if status == "success" else logger.error(msg)
 
     # Get the path to the plan file that was created
@@ -343,7 +365,14 @@ def execute_workflow(
     update_status(issue_id, "completed", logger)
 
     # Insert progress comment - best-effort, non-blocking
-    status, msg = insert_progress_comment(issue_id, "Solution implemented successfully")
+    comment = CapeComment(
+        issue_id=issue_id,
+        comment="Solution implemented successfully",
+        raw={},
+        source="system",
+        type="workflow"
+    )
+    status, msg = insert_progress_comment(comment)
     logger.debug(msg) if status == "success" else logger.error(msg)
 
     logger.info("\n=== Workflow completed successfully ===")

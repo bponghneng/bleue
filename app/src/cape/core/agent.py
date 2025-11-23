@@ -8,16 +8,21 @@ For new code, prefer importing from cape.core.agents directly:
 """
 
 import logging
-import os
 from typing import Callable, Optional
 
-from cape.core.agents import AgentExecuteRequest, AgentExecuteResponse, get_agent, get_implement_provider
+from cape.core.agents import (
+    AgentExecuteRequest,
+    AgentExecuteResponse,
+    get_agent,
+    get_implement_provider,
+)
 from cape.core.agents.claude import (
     ClaudeAgentPromptRequest,
     ClaudeAgentPromptResponse,
     ClaudeAgentTemplateRequest,
     execute_claude_template,
 )
+from cape.core.models import CapeComment
 from cape.core.notifications import insert_progress_comment, make_progress_comment_handler
 
 _DEFAULT_LOGGER = logging.getLogger(__name__)
@@ -62,9 +67,14 @@ def prompt_claude_code(request: ClaudeAgentPromptRequest) -> ClaudeAgentPromptRe
 
     # Insert final progress comment if successful
     if response.success and response.raw_output_path:
-        status, msg = insert_progress_comment(
-            request.issue_id, f"Output saved to: {response.raw_output_path}"
+        comment = CapeComment(
+            issue_id=request.issue_id,
+            comment=f"Output saved to: {response.raw_output_path}",
+            raw={},
+            source="agent",
+            type="claude"
         )
+        status, msg = insert_progress_comment(comment)
         logger.debug(msg) if status == "success" else logger.error(msg)
 
     # Map AgentExecuteResponse to ClaudeAgentPromptResponse
@@ -209,9 +219,14 @@ def execute_implement_plan(
 
     # Insert final progress comment if successful
     if response.success and response.raw_output_path:
-        status, msg = insert_progress_comment(
-            issue_id, f"Implementation complete. Output saved to: {response.raw_output_path}"
+        comment = CapeComment(
+            issue_id=issue_id,
+            comment=f"Implementation complete. Output saved to: {response.raw_output_path}",
+            raw={},
+            source="agent",
+            type=provider_name
         )
+        status, msg = insert_progress_comment(comment)
         logger.debug(msg) if status == "success" else logger.error(msg)
 
     return response
