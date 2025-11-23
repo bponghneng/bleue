@@ -4,13 +4,15 @@ This package provides utilities for inserting progress comments during
 workflow execution and creating stream handlers for agent output processing.
 
 Example:
+    from cape.core.models import CapeComment
     from cape.core.notifications import (
         insert_progress_comment,
         make_progress_comment_handler
     )
 
     # Insert a manual progress comment
-    status, msg = insert_progress_comment(issue_id, "Starting implementation")
+    comment = CapeComment(issue_id=123, comment="Starting implementation")
+    status, msg = insert_progress_comment(comment)
     logger.debug(msg) if status == "success" else logger.error(msg)
 
     # Create a stream handler for agent execution
