@@ -16,11 +16,8 @@ from typing import Any, Callable, Dict, Iterable, List, Optional, Tuple
 from dotenv import load_dotenv
 
 from cape.core.agents.base import AgentExecuteRequest, AgentExecuteResponse, CodingAgent
-from .claude_models import (
-    ClaudeAgentPromptRequest,
-    ClaudeAgentPromptResponse,
-    ClaudeAgentTemplateRequest,
-)
+
+from .claude_models import ClaudeAgentPromptResponse, ClaudeAgentTemplateRequest
 
 # Load environment variables
 load_dotenv()
@@ -415,7 +412,7 @@ class ClaudeAgent(CodingAgent):
 
         except Exception as e:
             error_msg = f"Error executing Claude Code: {e}"
-            _DEFAULT_LOGGER.error(error_msg)
+            _DEFAULT_LOGGER.exception(error_msg)
             return AgentExecuteResponse(
                 output=error_msg,
                 success=False,

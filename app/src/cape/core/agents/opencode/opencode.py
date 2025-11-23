@@ -12,7 +12,7 @@ import logging
 import os
 import subprocess
 import threading
-from typing import Any, Callable, Dict, Iterable, List, Optional, Tuple
+from typing import Any, Callable, Dict, List, Optional, Tuple
 
 from dotenv import load_dotenv
 
@@ -141,45 +141,44 @@ def convert_jsonl_to_json(jsonl_file: str) -> str:
     return json_file
 
 
-def iter_opencode_items(line: str) -> Iterable[Dict[str, Any]]:
-    """Yield text/tool items parsed from an OpenCode CLI stdout line.
+def iter_opencode_items(line: str) -> List[Dict[str, Any]]:
+    """Return text/tool items parsed from an OpenCode CLI stdout line.
 
-    This function is critical for real-time streaming progress comments.
-    It parses JSONL lines and extracts relevant content items from OpenCode messages.
+    This helper filters OpenCode streaming lines into the simplified
+    structures consumed by progress comment handlers.
     """
+    items: List[Dict[str, Any]] = []
+
     stripped = line.strip()
     if not stripped:
-        return []
+        return items
 
     try:
         parsed = json.loads(stripped)
     except json.JSONDecodeError:
-        return []
+        return items
 
     msg_type = parsed.get("type")
     if not msg_type:
-        return []
+        return items
 
     if msg_type == "text":
-        # Extract text content
         part = parsed.get("part", {})
         if not isinstance(part, dict):
-            return []
+            return items
 
         text = part.get("text", "")
         if text:
-            yield {"type": "text", "text": text}
+            items.append({"type": "text", "text": text})
 
     elif msg_type == "tool_use":
-        # Extract tool use
         part = parsed.get("part", {})
         if not isinstance(part, dict):
-            return []
+            return items
 
         tool_name = part.get("tool")
         if tool_name:
-            # Construct item similar to Claude's tool_use for consistency
-            item = {
+            item: Dict[str, Any] = {
                 "type": "tool_use",
                 "name": tool_name,
             }
@@ -188,7 +187,9 @@ def iter_opencode_items(line: str) -> Iterable[Dict[str, Any]]:
             if isinstance(state, dict) and "input" in state:
                 item["input"] = state["input"]
 
-            yield item
+            items.append(item)
+
+    return items
 
 
 class OpenCodeAgent(CodingAgent):
