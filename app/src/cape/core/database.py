@@ -29,7 +29,7 @@ SupabaseRows = List[SupabaseRow]
 class SupabaseConfig:
     """Configuration for Supabase connection."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.url: Optional[str] = os.environ.get("SUPABASE_URL")
         self.service_role_key: Optional[str] = os.environ.get("SUPABASE_SERVICE_ROLE_KEY")
 
@@ -150,13 +150,16 @@ def fetch_all_issues() -> List[CapeIssue]:
 # ============================================================================
 
 
-def create_comment(issue_id: int, text: str) -> CapeComment:
-    """Create a comment on an issue."""
+def create_comment(comment: CapeComment) -> CapeComment:
+    """Create a comment on an issue from a CapeComment payload."""
     client = get_client()
 
     comment_data: SupabaseRow = {
-        "issue_id": issue_id,
-        "comment": text.strip(),
+        "issue_id": comment.issue_id,
+        "comment": comment.comment.strip(),
+        "raw": comment.raw or {},
+        "source": comment.source,
+        "type": comment.type,
     }
 
     try:
@@ -170,8 +173,12 @@ def create_comment(issue_id: int, text: str) -> CapeComment:
         return CapeComment(**first_row)
 
     except APIError as e:
-        logger.error(f"Database error creating comment on issue {issue_id}: {e}")
-        raise ValueError(f"Failed to create comment on issue {issue_id}: {e}") from e
+        logger.error(
+            "Database error creating comment on issue %s: %s", comment.issue_id, e
+        )
+        raise ValueError(
+            f"Failed to create comment on issue {comment.issue_id}: {e}"
+        ) from e
 
 
 def fetch_comments(issue_id: int) -> List[CapeComment]:

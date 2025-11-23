@@ -4,9 +4,24 @@ Agent-specific models moved to cape.core.agents package.
 """
 
 from datetime import datetime
-from typing import List, Literal, Optional
+from typing import Literal, Optional
 
 from pydantic import BaseModel, Field, field_validator
+
+# Deprecated - use cape.core.agents.claude.claude_models instead
+# These aliases are provided for backward compatibility during migration
+from cape.core.agents.claude import (
+    ClaudeAgentPromptRequest as AgentPromptRequest,  # noqa: F401
+)
+from cape.core.agents.claude import (
+    ClaudeAgentPromptResponse as AgentPromptResponse,  # noqa: F401
+)
+from cape.core.agents.claude import (
+    ClaudeAgentResultMessage as ClaudeCodeResultMessage,  # noqa: F401
+)
+from cape.core.agents.claude import (
+    ClaudeAgentTemplateRequest as AgentTemplateRequest,  # noqa: F401
+)
 
 # All slash commands used in the Cape workflow system
 SlashCommand = Literal[
@@ -17,15 +32,6 @@ SlashCommand = Literal[
     "/triage:feature",
     "/triage:find-plan-file",
 ]
-
-# Deprecated - use cape.core.agents.claude_models instead
-# These aliases are provided for backward compatibility during migration
-from cape.core.agents.claude import (
-    ClaudeAgentPromptRequest as AgentPromptRequest,
-    ClaudeAgentPromptResponse as AgentPromptResponse,
-    ClaudeAgentResultMessage as ClaudeCodeResultMessage,
-    ClaudeAgentTemplateRequest as AgentTemplateRequest,
-)
 
 
 class CapeIssue(BaseModel):
@@ -63,6 +69,9 @@ class CapeComment(BaseModel):
     id: Optional[int] = None
     issue_id: int
     comment: str = Field(..., min_length=1)
+    raw: dict = Field(default_factory=dict)
+    source: Optional[str] = None
+    type: Optional[str] = None
     created_at: Optional[datetime] = None
 
     @field_validator("comment")
