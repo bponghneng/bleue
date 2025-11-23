@@ -1,3 +1,5 @@
+from typing import Optional
+
 from textual import work
 from textual.app import ComposeResult
 from textual.containers import Container
@@ -34,11 +36,12 @@ class EditDescriptionScreen(ModalScreen[bool]):
             id="edit-description-modal",
         )
 
-    def handle_save(self, description: str) -> None:
+    def handle_save(self, description: str, title: Optional[str] = None) -> None:
         """Handle save action from IssueForm.
 
         Args:
             description: Validated description text
+            title: Optional title value (ignored for description edits)
         """
         self.update_description_handler(description)
 

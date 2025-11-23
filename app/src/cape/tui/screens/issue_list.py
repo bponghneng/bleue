@@ -1,4 +1,3 @@
-import _frozen_importlib_external
 import logging
 from functools import partial
 from typing import List, Optional
@@ -37,8 +36,8 @@ class IssueListScreen(Screen):
 
     BINDINGS = [
         ("n", "new_issue", "New"),
-        ("v", "view_detail", "View"),
-        ("enter", "view_detail", "View"),
+        ("v", "view_detail", "View Details"),
+        ("enter", "view_detail", "View Details"),
         ("r", "refresh", "Refresh"),
         ("a", "assign_worker", "Assign"),
         ("d", "delete_issue", "Delete"),
