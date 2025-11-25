@@ -16,8 +16,17 @@ from cape.core.workflow import (
     implement_plan,
     update_status,
 )
+from cape.core.workflow.address_review import address_review_issues
 from cape.core.workflow.implement import parse_implement_output
 from cape.core.workflow.shared import derive_paths_from_plan
+from cape.core.workflow.types import (
+    ClassifyData,
+    ImplementData,
+    PlanData,
+    PlanFileData,
+    ReviewData,
+    StepResult,
+)
 
 
 @pytest.fixture
@@ -89,10 +98,11 @@ def test_classify_issue_success(mock_execute, mock_logger, sample_issue):
         session_id="test123",
     )
 
-    command, classification, error = classify_issue(sample_issue, "adw123", mock_logger)
-    assert command == "/triage:feature"
-    assert classification == {"type": "feature", "level": "simple"}
-    assert error is None
+    result = classify_issue(sample_issue, "adw123", mock_logger)
+    assert result.success
+    assert result.data.command == "/triage:feature"
+    assert result.data.classification == {"type": "feature", "level": "simple"}
+    assert result.error is None
 
 
 @patch("cape.core.workflow.classify.execute_template")
@@ -102,10 +112,10 @@ def test_classify_issue_failure(mock_execute, mock_logger, sample_issue):
         output="Error occurred", success=False, session_id=None
     )
 
-    command, classification, error = classify_issue(sample_issue, "adw123", mock_logger)
-    assert command is None
-    assert classification is None
-    assert error == "Error occurred"
+    result = classify_issue(sample_issue, "adw123", mock_logger)
+    assert not result.success
+    assert result.data is None
+    assert result.error == "Error occurred"
 
 
 @patch("cape.core.workflow.classify.execute_template")
@@ -117,10 +127,10 @@ def test_classify_issue_invalid_command(mock_execute, mock_logger, sample_issue)
         session_id="test123",
     )
 
-    command, classification, error = classify_issue(sample_issue, "adw123", mock_logger)
-    assert command is None
-    assert classification is None
-    assert "Invalid issue type" in error
+    result = classify_issue(sample_issue, "adw123", mock_logger)
+    assert not result.success
+    assert result.data is None
+    assert "Invalid issue type" in result.error
 
 
 @patch("cape.core.workflow.classify.execute_template")
@@ -130,10 +140,10 @@ def test_classify_issue_invalid_json(mock_execute, mock_logger, sample_issue):
         output="not-json", success=True, session_id="test123"
     )
 
-    command, classification, error = classify_issue(sample_issue, "adw123", mock_logger)
-    assert command is None
-    assert classification is None
-    assert "Invalid classification JSON" in error
+    result = classify_issue(sample_issue, "adw123", mock_logger)
+    assert not result.success
+    assert result.data is None
+    assert "Invalid classification JSON" in result.error
 
 
 @patch("cape.core.workflow.plan.execute_template")
@@ -143,9 +153,9 @@ def test_build_plan_success(mock_execute, mock_logger, sample_issue):
         output="Plan created successfully", success=True, session_id="test123"
     )
 
-    response = build_plan(sample_issue, "/triage:feature", "adw123", mock_logger)
-    assert response.success is True
-    assert response.output == "Plan created successfully"
+    result = build_plan(sample_issue, "/triage:feature", "adw123", mock_logger)
+    assert result.success
+    assert result.data.output == "Plan created successfully"
 
 
 @patch("cape.core.workflow.plan_file.execute_template")
@@ -155,9 +165,10 @@ def test_get_plan_file_success(mock_execute, mock_logger):
         output="specs/feature-plan.md", success=True, session_id="test123"
     )
 
-    file_path, error = get_plan_file("Plan output", 1, "adw123", mock_logger)
-    assert file_path == "specs/feature-plan.md"
-    assert error is None
+    result = get_plan_file("Plan output", 1, "adw123", mock_logger)
+    assert result.success
+    assert result.data.file_path == "specs/feature-plan.md"
+    assert result.error is None
 
 
 @patch("cape.core.workflow.plan_file.execute_template")
@@ -167,9 +178,10 @@ def test_get_plan_file_not_found(mock_execute, mock_logger):
         output="0", success=True, session_id="test123"
     )
 
-    file_path, error = get_plan_file("Plan output", 1, "adw123", mock_logger)
-    assert file_path is None
-    assert "No plan file found" in error
+    result = get_plan_file("Plan output", 1, "adw123", mock_logger)
+    assert not result.success
+    assert result.data is None
+    assert "No plan file found" in result.error
 
 
 @patch("cape.core.workflow.implement.execute_implement_plan")
@@ -181,8 +193,9 @@ def test_implement_plan_success(mock_execute, mock_logger):
         session_id="test123",
     )
 
-    response = implement_plan("specs/plan.md", 1, "adw123", mock_logger)
-    assert response.success is True
+    result = implement_plan("specs/plan.md", 1, "adw123", mock_logger)
+    assert result.success
+    assert result.data.output == "Implementation complete"
 
 
 @patch("cape.core.workflow.runner.fetch_issue")
@@ -191,13 +204,15 @@ def test_implement_plan_success(mock_execute, mock_logger):
 @patch("cape.core.workflow.runner.get_plan_file")
 @patch("cape.core.workflow.runner.implement_plan")
 @patch("cape.core.workflow.runner.generate_review")
-@patch("cape.core.workflow.runner.notify_review_template")
+@patch("cape.core.workflow.runner.address_review_issues")
+@patch("cape.core.workflow.runner.notify_plan_acceptance")
 @patch("cape.core.workflow.runner.insert_progress_comment")
 @patch("cape.core.workflow.runner.update_status")
 def test_execute_workflow_success(
     mock_update_status,
     mock_insert_comment,
-    mock_notify_review,
+    mock_notify_plan_acceptance,
+    mock_address_review,
     mock_generate_review,
     mock_implement,
     mock_get_file,
@@ -209,17 +224,21 @@ def test_execute_workflow_success(
 ):
     """Test successful complete workflow execution."""
     mock_fetch.return_value = sample_issue
-    mock_classify.return_value = ("/triage:feature", {"type": "feature", "level": "simple"}, None)
-    mock_build.return_value = ClaudeAgentPromptResponse(
-        output="Plan created", success=True, session_id="test"
+    mock_classify.return_value = StepResult.ok(
+        ClassifyData(command="/triage:feature", classification={"type": "feature", "level": "simple"})
     )
-    mock_get_file.return_value = ("specs/plan.md", None)
-    mock_implement.return_value = ClaudeAgentPromptResponse(
-        output="Done", success=True, session_id="test"
-    )
+    mock_build.return_value = StepResult.ok(PlanData(output="Plan created", session_id="test"))
+    mock_get_file.side_effect = [
+        StepResult.ok(PlanFileData(file_path="specs/plan.md")),
+        StepResult.ok(PlanFileData(file_path="specs/plan.md")),
+    ]  # Called twice - once for plan, once for implemented plan
+    mock_implement.return_value = StepResult.ok(ImplementData(output="Done", session_id="test"))
     # Mock review generation
-    mock_generate_review.return_value = (True, "Review text")
-    mock_notify_review.return_value = True
+    mock_generate_review.return_value = StepResult.ok(
+        ReviewData(review_text="Review text", review_file="specs/review.md")
+    )
+    mock_address_review.return_value = StepResult.ok(None)
+    mock_notify_plan_acceptance.return_value = StepResult.ok(None)
     # Mock insert_progress_comment to return success tuples
     mock_insert_comment.return_value = ("success", "Comment inserted successfully")
 
@@ -231,7 +250,8 @@ def test_execute_workflow_success(
     mock_update_status.assert_any_call(1, "completed", mock_logger)
     # Verify review steps were called
     mock_generate_review.assert_called_once()
-    mock_notify_review.assert_called_once()
+    mock_address_review.assert_called_once()
+    mock_notify_plan_acceptance.assert_called_once()
 
 
 @patch("cape.core.workflow.runner.fetch_issue")
@@ -249,7 +269,7 @@ def test_execute_workflow_fetch_failure(mock_fetch, mock_logger):
 def test_execute_workflow_classify_failure(mock_classify, mock_fetch, mock_logger, sample_issue):
     """Test workflow handles classification failure."""
     mock_fetch.return_value = sample_issue
-    mock_classify.return_value = (None, None, "Classification failed")
+    mock_classify.return_value = StepResult.fail("Classification failed")
 
     result = execute_workflow(1, "adw123", mock_logger)
     assert result is False
@@ -319,7 +339,7 @@ def test_generate_review_success(
     # Use a temporary file for the test
     review_file = tmp_path / "chore-test-review.txt"
 
-    success, review_text = generate_review(
+    result = generate_review(
         review_file=str(review_file),
         working_dir="/working/dir",
         repo_path="/repo/path",
@@ -327,8 +347,8 @@ def test_generate_review_success(
         logger=mock_logger,
     )
 
-    assert success is True
-    assert review_text == "CodeRabbit review output"
+    assert result.success
+    assert result.data.review_text == "CodeRabbit review output"
     mock_subprocess.assert_called_once()
 
     # Verify the file was written
@@ -347,7 +367,7 @@ def test_generate_review_subprocess_failure(mock_subprocess, mock_logger):
 
     from cape.core.workflow.review import generate_review
 
-    success, review_text = generate_review(
+    result = generate_review(
         review_file="specs/chore-test-review.txt",
         working_dir="/working/dir",
         repo_path="/repo/path",
@@ -355,8 +375,8 @@ def test_generate_review_subprocess_failure(mock_subprocess, mock_logger):
         logger=mock_logger,
     )
 
-    assert success is False
-    assert review_text is None
+    assert not result.success
+    assert result.data is None
     mock_logger.error.assert_called()
 
 
@@ -369,7 +389,7 @@ def test_generate_review_timeout(mock_subprocess, mock_logger):
 
     from cape.core.workflow.review import generate_review
 
-    success, review_text = generate_review(
+    result = generate_review(
         review_file="specs/chore-test-review.txt",
         working_dir="/working/dir",
         repo_path="/repo/path",
@@ -377,16 +397,16 @@ def test_generate_review_timeout(mock_subprocess, mock_logger):
         logger=mock_logger,
     )
 
-    assert success is False
-    assert review_text is None
+    assert not result.success
+    assert result.data is None
     mock_logger.error.assert_called_with("CodeRabbit review timed out after 300 seconds")
 
 
-@patch("cape.core.workflow.review.execute_template")
-@patch("cape.core.workflow.review.insert_progress_comment")
-@patch("cape.core.workflow.review.os.path.exists")
-@patch("cape.core.workflow.review.ClaudeAgentTemplateRequest")
-def test_notify_review_template_success(
+@patch("cape.core.workflow.address_review.execute_template")
+@patch("cape.core.workflow.address_review.insert_progress_comment")
+@patch("cape.core.workflow.address_review.os.path.exists")
+@patch("cape.core.workflow.address_review.ClaudeAgentTemplateRequest")
+def test_address_review_issues_success(
     mock_request_class, mock_exists, mock_insert_comment, mock_execute, mock_logger
 ):
     """Test successful notification of review template."""
@@ -406,37 +426,37 @@ def test_notify_review_template_success(
     # Mock insert_progress_comment success
     mock_insert_comment.return_value = ("success", "Comment inserted")
 
-    from cape.core.workflow.review import notify_review_template
+    from cape.core.workflow.address_review import address_review_issues
 
-    success = notify_review_template(
+    result = address_review_issues(
         review_file="specs/chore-test-review.txt", issue_id=123, adw_id="adw123", logger=mock_logger
     )
 
-    assert success is True
+    assert result.success
     mock_exists.assert_called_once_with("specs/chore-test-review.txt")
     mock_execute.assert_called_once_with(mock_request, stream_handler=None)
     mock_insert_comment.assert_called_once()
 
 
-@patch("cape.core.workflow.review.os.path.exists")
-def test_notify_review_template_file_not_found(mock_exists, mock_logger):
+@patch("cape.core.workflow.address_review.os.path.exists")
+def test_address_review_issues_file_not_found(mock_exists, mock_logger):
     """Test notification handles missing review file."""
     mock_exists.return_value = False
 
-    from cape.core.workflow.review import notify_review_template
+    from cape.core.workflow.address_review import address_review_issues
 
-    success = notify_review_template(
+    result = address_review_issues(
         review_file="specs/missing-review.txt", issue_id=123, adw_id="adw123", logger=mock_logger
     )
 
-    assert success is False
+    assert not result.success
     mock_logger.error.assert_called_with("Review file does not exist: specs/missing-review.txt")
 
 
-@patch("cape.core.workflow.review.execute_template")
-@patch("cape.core.workflow.review.os.path.exists")
-@patch("cape.core.workflow.review.ClaudeAgentTemplateRequest")
-def test_notify_review_template_execution_failure(
+@patch("cape.core.workflow.address_review.execute_template")
+@patch("cape.core.workflow.address_review.os.path.exists")
+@patch("cape.core.workflow.address_review.ClaudeAgentTemplateRequest")
+def test_address_review_issues_execution_failure(
     mock_request_class, mock_exists, mock_execute, mock_logger
 ):
     """Test notification handles template execution failure."""
@@ -452,11 +472,11 @@ def test_notify_review_template_execution_failure(
     mock_response.output = "Template execution failed"
     mock_execute.return_value = mock_response
 
-    from cape.core.workflow.review import notify_review_template
+    from cape.core.workflow.address_review import address_review_issues
 
-    success = notify_review_template(
+    result = address_review_issues(
         review_file="specs/chore-test-review.txt", issue_id=123, adw_id="adw123", logger=mock_logger
     )
 
-    assert success is False
+    assert not result.success
     mock_logger.error.assert_called()
