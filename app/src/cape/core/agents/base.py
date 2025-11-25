@@ -95,7 +95,7 @@ class CodingAgent(ABC):
         self,
         request: AgentExecuteRequest,
         *,
-        stream_handler: Optional[Callable[[str], None]] = None
+        stream_handler: Optional[Callable[[str], None]] = None,
     ) -> AgentExecuteResponse:
         """Execute an agent prompt with optional streaming.
 

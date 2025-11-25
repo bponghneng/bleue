@@ -70,7 +70,7 @@ def make_progress_comment_handler(
                         comment=text,
                         raw=item,  # Store the raw parsed dict
                         source="agent",
-                        type=provider  # "claude" or "opencode"
+                        type=provider,  # "claude" or "opencode"
                     )
 
                     # Insert progress comment (best-effort)

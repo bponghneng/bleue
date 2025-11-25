@@ -173,12 +173,8 @@ def create_comment(comment: CapeComment) -> CapeComment:
         return CapeComment(**first_row)
 
     except APIError as e:
-        logger.error(
-            "Database error creating comment on issue %s: %s", comment.issue_id, e
-        )
-        raise ValueError(
-            f"Failed to create comment on issue {comment.issue_id}: {e}"
-        ) from e
+        logger.error("Database error creating comment on issue %s: %s", comment.issue_id, e)
+        raise ValueError(f"Failed to create comment on issue {comment.issue_id}: {e}") from e
 
 
 def fetch_comments(issue_id: int) -> List[CapeComment]:

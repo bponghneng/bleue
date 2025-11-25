@@ -241,9 +241,7 @@ def test_claude_agent_execute_prompt_with_stream_handler(
 
 @patch("cape.core.agents.claude.claude.check_claude_installed")
 @patch("subprocess.Popen")
-def test_claude_agent_execute_prompt_error_handling(
-    mock_popen, mock_check, tmp_path, monkeypatch
-):
+def test_claude_agent_execute_prompt_error_handling(mock_popen, mock_check, tmp_path, monkeypatch):
     """Test ClaudeAgent error handling."""
     monkeypatch.setenv("CAPE_AGENTS_DIR", str(tmp_path))
     mock_check.return_value = None

@@ -216,7 +216,7 @@ class ClaudeAgent(CodingAgent):
         self,
         request: AgentExecuteRequest,
         *,
-        stream_handler: Optional[Callable[[str], None]] = None
+        stream_handler: Optional[Callable[[str], None]] = None,
     ) -> AgentExecuteResponse:
         """Execute Claude Code CLI with the given request.
 

@@ -72,7 +72,7 @@ def prompt_claude_code(request: ClaudeAgentPromptRequest) -> ClaudeAgentPromptRe
             comment=f"Output saved to: {response.raw_output_path}",
             raw={},
             source="agent",
-            type="claude"
+            type="claude",
         )
         status, msg = insert_progress_comment(comment)
         logger.debug(msg) if status == "success" else logger.error(msg)
@@ -102,7 +102,7 @@ def execute_agent_prompt(
     request: AgentExecuteRequest,
     provider: Optional[str] = None,
     *,
-    stream_handler: Optional[Callable[[str], None]] = None
+    stream_handler: Optional[Callable[[str], None]] = None,
 ) -> AgentExecuteResponse:
     """Execute agent prompt with specified or default provider.
 
@@ -136,11 +136,7 @@ def execute_agent_prompt(
 
 
 def execute_implement_plan(
-    plan_file: str,
-    issue_id: int,
-    adw_id: str,
-    agent_name: str,
-    logger: logging.Logger
+    plan_file: str, issue_id: int, adw_id: str, agent_name: str, logger: logging.Logger
 ) -> AgentExecuteResponse:
     """Execute implementation plan using configured provider.
 
@@ -224,7 +220,7 @@ def execute_implement_plan(
             comment=f"Implementation complete. Output saved to: {response.raw_output_path}",
             raw={},
             source="agent",
-            type=provider_name
+            type=provider_name,
         )
         status, msg = insert_progress_comment(comment)
         logger.debug(msg) if status == "success" else logger.error(msg)

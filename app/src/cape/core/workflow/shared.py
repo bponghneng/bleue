@@ -1,8 +1,7 @@
 """Shared constants and helper functions for workflow modules."""
 
 import os
-from typing import Dict, Optional
-
+from typing import Dict
 
 # Agent names
 AGENT_IMPLEMENTOR = "sdlc_implementor"
@@ -42,12 +41,7 @@ def derive_paths_from_plan(plan_path: str) -> Dict[str, str]:
     filename = os.path.basename(plan_path)
 
     # Default values if parsing fails
-    result = {
-        "type": "",
-        "slug": "",
-        "plan_file": plan_path,
-        "review_file": ""
-    }
+    result = {"type": "", "slug": "", "plan_file": plan_path, "review_file": ""}
 
     # Parse type and slug from filename
     # Expected format: {type}-{slug}-plan.md

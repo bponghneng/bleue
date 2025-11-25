@@ -60,13 +60,7 @@ def test_insert_progress_comment_success(mock_create_comment):
     mock_comment.id = 1
     mock_create_comment.return_value = mock_comment
 
-    comment = CapeComment(
-        issue_id=1,
-        comment="Test comment",
-        raw={},
-        source="test",
-        type="comment"
-    )
+    comment = CapeComment(issue_id=1, comment="Test comment", raw={}, source="test", type="comment")
     status, msg = insert_progress_comment(comment)
     assert status == "success"
     assert "Comment inserted: ID=1" in msg
@@ -79,13 +73,7 @@ def test_insert_progress_comment_failure(mock_create_comment):
     """Test progress comment insertion handles errors gracefully."""
     mock_create_comment.side_effect = Exception("Database error")
 
-    comment = CapeComment(
-        issue_id=1,
-        comment="Test comment",
-        raw={},
-        source="test",
-        type="comment"
-    )
+    comment = CapeComment(issue_id=1, comment="Test comment", raw={}, source="test", type="comment")
     status, msg = insert_progress_comment(comment)
     assert status == "error"
     assert "Failed to insert comment on issue 1" in msg
@@ -175,7 +163,9 @@ def test_get_plan_file_success(mock_execute, mock_logger):
 @patch("cape.core.workflow.plan_file.execute_template")
 def test_get_plan_file_not_found(mock_execute, mock_logger):
     """Test plan file not found."""
-    mock_execute.return_value = ClaudeAgentPromptResponse(output="0", success=True, session_id="test123")
+    mock_execute.return_value = ClaudeAgentPromptResponse(
+        output="0", success=True, session_id="test123"
+    )
 
     file_path, error = get_plan_file("Plan output", 1, "adw123", mock_logger)
     assert file_path is None
@@ -334,7 +324,7 @@ def test_generate_review_success(
         working_dir="/working/dir",
         repo_path="/repo/path",
         issue_id=123,
-        logger=mock_logger
+        logger=mock_logger,
     )
 
     assert success is True
@@ -362,7 +352,7 @@ def test_generate_review_subprocess_failure(mock_subprocess, mock_logger):
         working_dir="/working/dir",
         repo_path="/repo/path",
         issue_id=123,
-        logger=mock_logger
+        logger=mock_logger,
     )
 
     assert success is False
@@ -374,6 +364,7 @@ def test_generate_review_subprocess_failure(mock_subprocess, mock_logger):
 def test_generate_review_timeout(mock_subprocess, mock_logger):
     """Test CodeRabbit review generation handles timeout."""
     import subprocess
+
     mock_subprocess.side_effect = subprocess.TimeoutExpired(cmd="coderabbit", timeout=300)
 
     from cape.core.workflow.review import generate_review
@@ -383,7 +374,7 @@ def test_generate_review_timeout(mock_subprocess, mock_logger):
         working_dir="/working/dir",
         repo_path="/repo/path",
         issue_id=123,
-        logger=mock_logger
+        logger=mock_logger,
     )
 
     assert success is False
@@ -418,10 +409,7 @@ def test_notify_review_template_success(
     from cape.core.workflow.review import notify_review_template
 
     success = notify_review_template(
-        review_file="specs/chore-test-review.txt",
-        issue_id=123,
-        adw_id="adw123",
-        logger=mock_logger
+        review_file="specs/chore-test-review.txt", issue_id=123, adw_id="adw123", logger=mock_logger
     )
 
     assert success is True
@@ -438,10 +426,7 @@ def test_notify_review_template_file_not_found(mock_exists, mock_logger):
     from cape.core.workflow.review import notify_review_template
 
     success = notify_review_template(
-        review_file="specs/missing-review.txt",
-        issue_id=123,
-        adw_id="adw123",
-        logger=mock_logger
+        review_file="specs/missing-review.txt", issue_id=123, adw_id="adw123", logger=mock_logger
     )
 
     assert success is False
@@ -470,10 +455,7 @@ def test_notify_review_template_execution_failure(
     from cape.core.workflow.review import notify_review_template
 
     success = notify_review_template(
-        review_file="specs/chore-test-review.txt",
-        issue_id=123,
-        adw_id="adw123",
-        logger=mock_logger
+        review_file="specs/chore-test-review.txt", issue_id=123, adw_id="adw123", logger=mock_logger
     )
 
     assert success is False

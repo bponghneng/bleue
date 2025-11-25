@@ -184,14 +184,16 @@ def test_create_comment_success(mock_get_client):
 
     mock_client.table.return_value = mock_table
     mock_table.insert.return_value = mock_insert
-    mock_execute.data = [{
-        "id": 1,
-        "issue_id": 1,
-        "comment": "Test comment",
-        "raw": {"test": "data"},
-        "source": "test",
-        "type": "unit"
-    }]
+    mock_execute.data = [
+        {
+            "id": 1,
+            "issue_id": 1,
+            "comment": "Test comment",
+            "raw": {"test": "data"},
+            "source": "test",
+            "type": "unit",
+        }
+    ]
     mock_insert.execute.return_value = mock_execute
     mock_get_client.return_value = mock_client
 
