@@ -4,7 +4,7 @@ from logging import Logger
 
 from cape.core.database import fetch_issue
 from cape.core.models import CapeComment
-from cape.core.notifications import insert_progress_comment
+from cape.core.notifications import insert_progress_comment, make_progress_comment_handler
 from cape.core.workflow.acceptance import notify_plan_acceptance
 from cape.core.workflow.classify import classify_issue
 from cape.core.workflow.implement import implement_plan, parse_implement_output
@@ -72,7 +72,10 @@ def execute_workflow(
 
     # Classify the issue
     logger.info("\n=== Classifying issue ===")
-    issue_command, classification_data, error = classify_issue(issue, adw_id, logger)
+    classify_handler = make_progress_comment_handler(issue.id, adw_id, logger)
+    issue_command, classification_data, error = classify_issue(
+        issue, adw_id, logger, stream_handler=classify_handler
+    )
     if error:
         logger.error(f"Error classifying issue: {error}")
         return False
@@ -106,7 +109,8 @@ def execute_workflow(
 
     # Build the implementation plan
     logger.info("\n=== Building implementation plan ===")
-    plan_response = build_plan(issue, issue_command, adw_id, logger)
+    plan_handler = make_progress_comment_handler(issue.id, adw_id, logger)
+    plan_response = build_plan(issue, issue_command, adw_id, logger, stream_handler=plan_handler)
     if not plan_response.success:
         logger.error(f"Error building plan: {plan_response.output}")
         return False

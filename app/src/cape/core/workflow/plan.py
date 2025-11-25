@@ -1,6 +1,7 @@
 """Plan building functionality for workflow orchestration."""
 
 from logging import Logger
+from typing import Callable, Optional
 
 from cape.core.agent import execute_template
 from cape.core.agents.claude import ClaudeAgentPromptResponse, ClaudeAgentTemplateRequest
@@ -9,7 +10,11 @@ from cape.core.workflow.shared import AGENT_PLANNER
 
 
 def build_plan(
-    issue: CapeIssue, command: SlashCommand, adw_id: str, logger: Logger
+    issue: CapeIssue,
+    command: SlashCommand,
+    adw_id: str,
+    logger: Logger,
+    stream_handler: Optional[Callable[[str], None]] = None,
 ) -> ClaudeAgentPromptResponse:
     """Build implementation plan for the issue using the specified command.
 
@@ -18,6 +23,7 @@ def build_plan(
         command: The triage command to use (e.g., /triage:feature)
         adw_id: Workflow ID for tracking
         logger: Logger instance
+        stream_handler: Optional callback for streaming output
 
     Returns:
         Agent response with plan output
@@ -34,7 +40,7 @@ def build_plan(
         "build_plan request: %s",
         request.model_dump_json(indent=2, by_alias=True),
     )
-    response = execute_template(request)
+    response = execute_template(request, stream_handler=stream_handler)
     logger.debug(
         "build_plan response: %s",
         response.model_dump_json(indent=2, by_alias=True),

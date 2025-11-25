@@ -422,11 +422,21 @@ class ClaudeAgent(CodingAgent):
             )
 
 
-def execute_claude_template(request: ClaudeAgentTemplateRequest) -> ClaudeAgentPromptResponse:
+def execute_claude_template(
+    request: ClaudeAgentTemplateRequest,
+    stream_handler: Optional[Callable[[str], None]] = None,
+) -> ClaudeAgentPromptResponse:
     """Execute a Claude Code template with slash command and arguments.
 
     This is a convenience function that maintains backward compatibility
     with the original execute_template API.
+
+    Args:
+        request: Claude-specific template request
+        stream_handler: Optional callback for streaming output
+
+    Returns:
+        Claude-specific prompt response
     """
     # Construct prompt from slash command and args
     prompt = f"{request.slash_command} {' '.join(request.args)}"
@@ -452,7 +462,7 @@ def execute_claude_template(request: ClaudeAgentTemplateRequest) -> ClaudeAgentP
 
     # Execute using ClaudeAgent
     agent = ClaudeAgent()
-    response = agent.execute_prompt(agent_request)
+    response = agent.execute_prompt(agent_request, stream_handler=stream_handler)
 
     # Map back to ClaudeAgentPromptResponse
     return ClaudeAgentPromptResponse(

@@ -2,7 +2,7 @@
 
 import json
 from logging import Logger
-from typing import Dict, Optional, Tuple, cast
+from typing import Callable, Dict, Optional, Tuple, cast
 
 from cape.core.agent import execute_template
 from cape.core.agents.claude import ClaudeAgentTemplateRequest
@@ -11,9 +11,18 @@ from cape.core.workflow.shared import AGENT_CLASSIFIER
 
 
 def classify_issue(
-    issue: CapeIssue, adw_id: str, logger: Logger
+    issue: CapeIssue,
+    adw_id: str,
+    logger: Logger,
+    stream_handler: Optional[Callable[[str], None]] = None,
 ) -> Tuple[Optional[SlashCommand], Optional[Dict[str, str]], Optional[str]]:
     """Classify issue and return appropriate slash command.
+
+    Args:
+        issue: The Cape issue to classify
+        adw_id: Workflow ID for tracking
+        logger: Logger instance
+        stream_handler: Optional callback for streaming output
 
     Returns:
         Tuple of (command, classification_data, error_message)
@@ -31,7 +40,7 @@ def classify_issue(
         "classify request: %s",
         request.model_dump_json(indent=2, by_alias=True),
     )
-    response = execute_template(request)
+    response = execute_template(request, stream_handler=stream_handler)
     logger.debug(
         "classify response: %s",
         response.model_dump_json(indent=2, by_alias=True),
