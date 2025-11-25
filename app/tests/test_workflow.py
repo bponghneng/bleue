@@ -414,7 +414,7 @@ def test_notify_review_template_success(
 
     assert success is True
     mock_exists.assert_called_once_with("specs/chore-test-review.txt")
-    mock_execute.assert_called_once_with(mock_request)
+    mock_execute.assert_called_once_with(mock_request, stream_handler=None)
     mock_insert_comment.assert_called_once()
 
 
