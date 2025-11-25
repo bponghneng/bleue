@@ -12,6 +12,7 @@ Main components:
 - review: CodeRabbit review generation and notification
 - status: Issue status updates
 - shared: Common constants and helper functions
+- types: Unified result types for consistent error handling
 """
 
 # Import and re-export public API for backward compatibility
@@ -21,6 +22,14 @@ from cape.core.workflow.plan import build_plan
 from cape.core.workflow.plan_file import get_plan_file
 from cape.core.workflow.runner import execute_workflow
 from cape.core.workflow.status import update_status
+from cape.core.workflow.types import (
+    ClassifyData,
+    ImplementData,
+    PlanData,
+    PlanFileData,
+    ReviewData,
+    StepResult,
+)
 
 # Export public API
 __all__ = [
@@ -30,4 +39,11 @@ __all__ = [
     "build_plan",
     "get_plan_file",
     "implement_plan",
+    # New unified types
+    "StepResult",
+    "ClassifyData",
+    "PlanData",
+    "PlanFileData",
+    "ImplementData",
+    "ReviewData",
 ]
