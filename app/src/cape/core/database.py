@@ -196,7 +196,7 @@ def fetch_comments(issue_id: int) -> List[CapeComment]:
             client.table("cape_comments")
             .select("*")
             .eq("issue_id", issue_id)
-            .order("created_at", desc=False)
+            .order("created_at", desc=True)
             .execute()
         )
 
