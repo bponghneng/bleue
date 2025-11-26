@@ -16,14 +16,14 @@ class CreateIssueModal(ModalScreen[Optional[int]]):
     def compose(self) -> ComposeResult:
         """Create child widgets for the create issue modal."""
         yield Container(
-            Static("Create New Issue", id="modal_header"),
+            Static("Create New Issue", id="modal-header"),
             IssueForm(
                 initial_title="Enter issue title ...",
                 initial_text="Enter issue description ...",
                 on_save_callback=self.handle_save,
                 on_cancel_callback=self.handle_cancel,
             ),
-            id="modal_content",
+            id="modal-content",
         )
 
     def handle_save(self, description: str, title: str) -> None:

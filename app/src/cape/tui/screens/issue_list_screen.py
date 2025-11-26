@@ -16,7 +16,6 @@ from textual.widgets import (
 )
 from textual.widgets._data_table import RowKey
 
-from cape.tui.screens.worker_assign_modal import WorkerAssignModal
 from cape.core.database import (
     delete_issue,
     fetch_all_issues,
@@ -27,6 +26,7 @@ from cape.tui.screens.confirm_delete_modal import ConfirmDeleteModal
 from cape.tui.screens.create_issue_modal import CreateIssueModal
 from cape.tui.screens.help_modal import HelpModal
 from cape.tui.screens.issue_detail_screen import IssueDetailScreen
+from cape.tui.screens.worker_assign_modal import WorkerAssignModal
 
 logger = logging.getLogger(__name__)
 

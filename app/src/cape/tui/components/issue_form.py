@@ -36,13 +36,16 @@ class IssueForm(Container):
 
     def compose(self) -> ComposeResult:
         """Create child widgets for the form."""
-        yield Input(id="title", placeholder="Enter issue title ...")
-        yield Rule(line_style="dashed", classes="divider")
-        yield TextArea(id="description", language="markdown")
-        yield Horizontal(
-            Button("Save", variant="success", compact=True, flat=True, id="save-btn"),
-            Button("Cancel", variant="error", compact=True, flat=True, id="cancel-btn"),
-            id="button-row",
+        yield Container(
+            Input(id="title", placeholder="Enter issue title ..."),
+            Rule(line_style="dashed", classes="divider"),
+            TextArea(id="issue-description", language="markdown"),
+            Horizontal(
+                Button("Save", variant="success", compact=True, flat=True, id="save-btn"),
+                Button("Cancel", variant="error", compact=True, flat=True, id="cancel-btn"),
+                id="button-row",
+            ),
+            id="issue-form",
         )
 
     def on_mount(self) -> None:
