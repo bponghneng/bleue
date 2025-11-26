@@ -132,7 +132,52 @@ Markdown {
 #comments-widget {
     background: transparent;
     height: auto;
-    overflow-y: hidden;
+}
+
+#comments-container {
+    height: auto;
+}
+
+/* Comment item styling */
+
+CommentItem {
+    border-top: dashed $accent-muted;
+}
+
+CommentHeader {
+    margin: 0 0 1 0;
+}
+
+.comment-item {
+    height: auto;
+    padding: 0 0 1 0;
+}
+
+.comment-timestamp {
+    height: auto;
+    width: auto;
+}
+
+.comment-badge {
+    height: auto;
+    width: auto;
+    margin-left: 1;
+}
+
+.comment-header-spacer {
+    width: 1fr;
+}
+
+.comment-body {
+    height: auto;
+}
+
+.comment-todo-item {
+    height: auto;
+}
+
+.comment-artifact-content {
+    height: auto;
 }
 
 

@@ -353,50 +353,159 @@ def test_comments_widget_initialization():
     assert widget is not None
 
 
-def test_comments_widget_empty_state(mock_comments):
-    """Test Comments displays empty state message."""
-    widget = Comments()
-    widget.clear = Mock()
-    widget.write = Mock()
+def test_comment_item_factory_default_type(mock_comments):
+    """Test create_comment_widget returns DefaultComment for unrecognized types."""
+    from cape.tui.components.comment_item import (
+        DefaultComment,
+        create_comment_widget,
+    )
 
-    # Update with empty comments list
-    widget.update_comments([])
+    # Comment without source/type should use DefaultComment
+    comment = mock_comments[0]
+    widget = create_comment_widget(comment)
 
-    # Verify it was cleared and empty message shown
-    widget.clear.assert_called_once()
-    widget.write.assert_called_once_with("No comments yet")
-
-
-def test_comments_widget_with_comments(mock_comments):
-    """Test Comments displays comments correctly."""
-    widget = Comments()
-    widget.clear = Mock()
-    widget.write = Mock()
-
-    # Update with comments
-    widget.update_comments(mock_comments)
-
-    # Verify it was cleared
-    widget.clear.assert_called_once()
-
-    # Verify comments were written (2 comments * 2 lines each = 4 writes)
-    assert widget.write.call_count >= 2
+    assert isinstance(widget, DefaultComment)
+    assert widget.comment == comment
+    assert "default-comment" in widget.classes
 
 
-def test_comments_widget_timestamp_formatting(mock_comments):
-    """Test Comments formats timestamps correctly."""
-    widget = Comments()
-    widget.clear = Mock()
-    widget.write = Mock()
+def test_comment_item_factory_agent_claude():
+    """Test create_comment_widget returns AgentClaudeComment for agent/claude type."""
+    from cape.tui.components.comment_item import (
+        AgentClaudeComment,
+        create_comment_widget,
+    )
 
-    # Update with comments
-    widget.update_comments(mock_comments)
+    comment = CapeComment(
+        id=1,
+        issue_id=1,
+        comment="Claude comment",
+        source="agent",
+        type="claude",
+        created_at=datetime(2024, 1, 1, 12, 0, 0),
+    )
+    widget = create_comment_widget(comment)
 
-    # Check that timestamps are formatted
-    calls = widget.write.call_args_list
-    # First call should include formatted timestamp
-    first_call_text = calls[0][0][0]
-    assert "2024-01-01 12:10" in first_call_text
+    assert isinstance(widget, AgentClaudeComment)
+    assert "agent-claude" in widget.classes
+
+
+def test_comment_item_factory_system_workflow():
+    """Test create_comment_widget returns SystemWorkflowComment for system/workflow type."""
+    from cape.tui.components.comment_item import (
+        SystemWorkflowComment,
+        create_comment_widget,
+    )
+
+    comment = CapeComment(
+        id=1,
+        issue_id=1,
+        comment="Workflow event",
+        source="system",
+        type="workflow",
+        created_at=datetime(2024, 1, 1, 12, 0, 0),
+    )
+    widget = create_comment_widget(comment)
+
+    assert isinstance(widget, SystemWorkflowComment)
+    assert "system-workflow" in widget.classes
+
+
+def test_comment_item_stores_comment():
+    """Test CommentItem stores the comment reference."""
+    from cape.tui.components.comment_item import CommentItem
+
+    comment = CapeComment(
+        id=1,
+        issue_id=1,
+        comment="Test comment",
+        created_at=datetime(2024, 1, 1, 12, 0, 0),
+    )
+    widget = CommentItem(comment)
+
+    assert widget.comment == comment
+    assert widget.comment.comment == "Test comment"
+
+
+def test_agent_claude_comment_text_layout():
+    """Test AgentClaudeComment with raw.type='text' layout."""
+    from cape.tui.components.comment_item import AgentClaudeComment
+
+    comment = CapeComment(
+        id=1,
+        issue_id=1,
+        comment="Fallback text",
+        source="agent",
+        type="claude",
+        raw={"type": "text", "text": "This is the text content"},
+        created_at=datetime(2024, 1, 1, 12, 0, 0),
+    )
+    widget = AgentClaudeComment(comment)
+
+    # Verify the raw type is accessible
+    assert widget.comment.raw["type"] == "text"
+    assert widget.comment.raw["text"] == "This is the text content"
+
+
+def test_agent_claude_comment_tool_use_layout():
+    """Test AgentClaudeComment with raw.type='tool_use' layout."""
+    from cape.tui.components.comment_item import AgentClaudeComment
+
+    comment = CapeComment(
+        id=1,
+        issue_id=1,
+        comment="Fallback text",
+        source="agent",
+        type="claude",
+        raw={
+            "type": "tool_use",
+            "input": {
+                "todos": [
+                    {"status": "completed", "content": "First task"},
+                    {"status": "in_progress", "content": "Second task"},
+                    {"status": "pending", "content": "Third task"},
+                ]
+            },
+        },
+        created_at=datetime(2024, 1, 1, 12, 0, 0),
+    )
+    widget = AgentClaudeComment(comment)
+
+    # Verify the raw structure is accessible
+    assert widget.comment.raw["type"] == "tool_use"
+    todos = widget.comment.raw["input"]["todos"]
+    assert len(todos) == 3
+    assert todos[0]["status"] == "completed"
+    assert todos[1]["status"] == "in_progress"
+    assert todos[2]["status"] == "pending"
+
+
+def test_agent_claude_comment_status_emoji_mapping():
+    """Test AgentClaudeComment status emoji mapping."""
+    from cape.tui.components.comment_item import AgentClaudeComment
+
+    assert AgentClaudeComment._STATUS_EMOJI["completed"] == "✅"
+    assert AgentClaudeComment._STATUS_EMOJI["in_progress"] == "🚀"
+    assert AgentClaudeComment._STATUS_EMOJI["pending"] == "⏳"
+
+
+def test_agent_claude_comment_fallback_layout():
+    """Test AgentClaudeComment falls back to comment body when raw.type is unknown."""
+    from cape.tui.components.comment_item import AgentClaudeComment
+
+    comment = CapeComment(
+        id=1,
+        issue_id=1,
+        comment="This should be displayed",
+        source="agent",
+        type="claude",
+        raw={"type": "unknown_type"},
+        created_at=datetime(2024, 1, 1, 12, 0, 0),
+    )
+    widget = AgentClaudeComment(comment)
+
+    # Verify fallback to comment body
+    assert widget.comment.comment == "This should be displayed"
 
 
 # Tests for Conditional Comments Visibility

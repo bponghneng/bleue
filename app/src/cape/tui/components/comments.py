@@ -1,20 +1,26 @@
+"""Comments container widget for the TUI."""
+
 from typing import List
 
-from textual.widgets import RichLog
+from textual.app import ComposeResult
+from textual.containers import Container
+from textual.widgets import Static
 
 from cape.core.models import CapeComment
+from cape.tui.components.comment_item import create_comment_widget
 
 
-class Comments(RichLog):
-    """Widget for displaying issue comments with consistent formatting.
+class Comments(Container):
+    """Composite widget for displaying issue comments.
 
-    This widget extends RichLog to provide specialized comment display
-    functionality with timestamp formatting and empty state handling.
+    This widget renders a scrollable list of comment items, with each
+    comment rendered by a type-specific component based on its source
+    and type fields.
     """
 
-    def __init__(self, **kwargs):
-        """Initialize the comments component."""
-        super().__init__(**kwargs)
+    def compose(self) -> ComposeResult:
+        """Compose the comments container layout."""
+        yield Container(id="comments-container")
 
     def update_comments(self, comments: List[CapeComment]) -> None:
         """Update the displayed comments.
@@ -22,15 +28,12 @@ class Comments(RichLog):
         Args:
             comments: List of CapeComment objects to display
         """
-        self.clear()
+        container = self.query_one("#comments-container", Container)
+        container.remove_children()
 
         if not comments:
-            self.write("No comments yet")
+            container.mount(Static("No comments yet", classes="empty-state"))
         else:
             for comment in comments:
-                timestamp = (
-                    comment.created_at.strftime("%Y-%m-%d %H:%M")
-                    if comment.created_at
-                    else "Unknown"
-                )
-                self.write(f"[dim]{timestamp}[/dim]\n{comment.comment}\n")
+                widget = create_comment_widget(comment)
+                container.mount(widget)
