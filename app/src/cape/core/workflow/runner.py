@@ -107,7 +107,11 @@ def execute_workflow(
     else:
         comment_text = f"Issue classified as {issue_command}"
     comment = CapeComment(
-        issue_id=issue_id, comment=comment_text, raw=classification_data, source="system", type="workflow"
+        issue_id=issue_id,
+        comment=comment_text,
+        raw=classification_data,
+        source="system",
+        type="workflow",
     )
     status, msg = insert_progress_comment(comment)
     logger.debug(msg) if status == "success" else logger.error(msg)
