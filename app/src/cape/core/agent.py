@@ -217,16 +217,4 @@ def execute_implement_plan(
     agent = get_agent(provider_name)
     response = agent.execute_prompt(request, stream_handler=handler)
 
-    # Insert final progress comment if successful
-    if response.success and response.raw_output_path:
-        comment = CapeComment(
-            issue_id=issue_id,
-            comment=f"Implementation complete. Output saved to: {response.raw_output_path}",
-            raw={},
-            source="agent",
-            type=provider_name,
-        )
-        status, msg = insert_progress_comment(comment)
-        logger.debug(msg) if status == "success" else logger.error(msg)
-
     return response

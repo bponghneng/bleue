@@ -1,32 +1,11 @@
 """Implementation functionality for workflow orchestration."""
 
 from logging import Logger
-from typing import Dict, Optional
 
 from cape.core.agent import execute_implement_plan
 from cape.core.agents import AgentExecuteResponse
 from cape.core.workflow.shared import AGENT_IMPLEMENTOR
 from cape.core.workflow.types import ImplementData, StepResult
-
-
-def parse_implement_output(output: str, logger: Logger) -> Optional[Dict]:
-    """Log implementation output for debugging.
-
-    This function no longer parses JSON. The plan file path is now discovered
-    using the find-plan-file command in the workflow.
-
-    Args:
-        output: The raw output from the implementation
-        logger: Logger instance
-
-    Returns:
-        Empty dict for backward compatibility (deprecated)
-    """
-    logger.debug("Implementation output logged")
-    logger.debug(f"Output preview: {output[:200]}...")
-
-    # Return empty dict for backward compatibility
-    return {}
 
 
 def implement_plan(

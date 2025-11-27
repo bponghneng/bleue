@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, Any
 
 from textual.app import ComposeResult
 from textual.containers import Container, Horizontal
-from textual.widgets import Collapsible, Static
+from textual.widgets import Collapsible, Pretty, Static
 
 if TYPE_CHECKING:
     from cape.core.models import CapeComment
@@ -39,7 +39,7 @@ class CommentHeader(Horizontal):
         Args:
             timestamp: Formatted timestamp string
             source: Comment source (e.g., "agent", "system")
-            comment_type: Comment type (e.g., "claude", "artifact")
+            comment_type: Comment type (e.g., "claude", "workflow")
             **kwargs: Additional arguments passed to Horizontal
         """
         super().__init__(**kwargs)
@@ -130,9 +130,19 @@ class AgentClaudeComment(CommentItem):
 
         if raw_type == "text":
             # Display text content from raw.text
-            text = raw.get("text", "")
+            text = raw.get("text")
             if text:
-                yield Static(text, classes="comment-body")
+                output = self._extract_output(text)
+
+                if isinstance(output, dict):
+                    yield Collapsible(
+                        Pretty(output),
+                        title="Output",
+                        collapsed=True,
+                    )
+                else:
+                    text_value = text if isinstance(text, str) else json.dumps(text, indent=2)
+                    yield Static(text_value, classes="comment-body")
                 content_yielded = True
         elif raw_type == "tool_use":
             # Display todos as checklist from raw.input.todos
@@ -149,33 +159,24 @@ class AgentClaudeComment(CommentItem):
         if not content_yielded and self.comment.comment:
             yield Static(self.comment.comment, classes="comment-body")
 
+    @staticmethod
+    def _extract_output(text: Any) -> dict | None:
+        """Attempt to parse structured output from raw text."""
+        if isinstance(text, dict):
+            return text
+        if isinstance(text, str):
+            try:
+                parsed = json.loads(text)
+            except (json.JSONDecodeError, TypeError):
+                return None
+            return parsed if isinstance(parsed, dict) else None
+        return None
+
 
 class AgentOpencodeComment(CommentItem):
     """Comment from OpenCode agent."""
 
     DEFAULT_CLASSES = "comment-item agent-comment agent-opencode"
-
-
-class SystemArtifactComment(CommentItem):
-    """System comment for artifacts.
-
-    Displays the raw JSON content in a collapsible section.
-    """
-
-    DEFAULT_CLASSES = "comment-item system-comment system-artifact"
-
-    def compose(self) -> ComposeResult:
-        """Compose the artifact comment layout."""
-        yield self._compose_header()
-
-        raw = _parse_raw(self.comment.raw)
-        raw_json = json.dumps(raw, indent=2)
-
-        yield Collapsible(
-            Static(raw_json, classes="comment-artifact-content"),
-            title="Artifact",
-            collapsed=True,
-        )
 
 
 class SystemWorkflowComment(CommentItem):
@@ -194,7 +195,6 @@ class DefaultComment(CommentItem):
 _COMMENT_TYPE_MAP: dict[tuple[str | None, str | None], type[CommentItem]] = {
     ("agent", "claude"): AgentClaudeComment,
     ("agent", "opencode"): AgentOpencodeComment,
-    ("system", "artifact"): SystemArtifactComment,
     ("system", "workflow"): SystemWorkflowComment,
 }
 

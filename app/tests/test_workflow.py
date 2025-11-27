@@ -17,7 +17,6 @@ from cape.core.workflow import (
     update_status,
 )
 from cape.core.workflow.address_review import address_review_issues
-from cape.core.workflow.implement import parse_implement_output
 from cape.core.workflow.shared import derive_paths_from_plan
 from cape.core.workflow.types import (
     ClassifyData,
@@ -225,7 +224,10 @@ def test_execute_workflow_success(
     """Test successful complete workflow execution."""
     mock_fetch.return_value = sample_issue
     mock_classify.return_value = StepResult.ok(
-        ClassifyData(command="/triage:feature", classification={"type": "feature", "level": "simple"})
+        ClassifyData(
+            command="/triage:feature",
+            classification={"type": "feature", "level": "simple"},
+        )
     )
     mock_build.return_value = StepResult.ok(PlanData(output="Plan created", session_id="test"))
     mock_get_file.side_effect = [
@@ -244,7 +246,7 @@ def test_execute_workflow_success(
 
     result = execute_workflow(1, "adw123", mock_logger)
     assert result is True
-    assert mock_insert_comment.call_count == 4  # 4 progress comments
+    assert mock_insert_comment.call_count == 7  # progress comments for each stage
     assert mock_update_status.call_count == 2  # status updated to "started" and "completed"
     mock_update_status.assert_any_call(1, "started", mock_logger)
     mock_update_status.assert_any_call(1, "completed", mock_logger)
@@ -273,17 +275,6 @@ def test_execute_workflow_classify_failure(mock_classify, mock_fetch, mock_logge
 
     result = execute_workflow(1, "adw123", mock_logger)
     assert result is False
-
-
-def test_parse_implement_output_deprecated(mock_logger):
-    """Test that parse_implement_output is deprecated and just logs output."""
-    output = "Implementation complete with conversational text"
-
-    result = parse_implement_output(output, mock_logger)
-    # Function is deprecated and returns empty dict
-    assert result == {}
-    # Should log debug messages
-    mock_logger.debug.assert_called()
 
 
 def test_derive_paths_from_plan():
@@ -426,7 +417,6 @@ def test_address_review_issues_success(
     # Mock insert_progress_comment success
     mock_insert_comment.return_value = ("success", "Comment inserted")
 
-
     result = address_review_issues(
         review_file="specs/chore-test-review.txt", issue_id=123, adw_id="adw123", logger=mock_logger
     )
@@ -441,7 +431,6 @@ def test_address_review_issues_success(
 def test_address_review_issues_file_not_found(mock_exists, mock_logger):
     """Test notification handles missing review file."""
     mock_exists.return_value = False
-
 
     result = address_review_issues(
         review_file="specs/missing-review.txt", issue_id=123, adw_id="adw123", logger=mock_logger
@@ -469,7 +458,6 @@ def test_address_review_issues_execution_failure(
     mock_response.success = False
     mock_response.output = "Template execution failed"
     mock_execute.return_value = mock_response
-
 
     result = address_review_issues(
         review_file="specs/chore-test-review.txt", issue_id=123, adw_id="adw123", logger=mock_logger

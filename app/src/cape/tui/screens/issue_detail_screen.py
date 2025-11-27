@@ -52,11 +52,11 @@ class IssueDetailScreen(Screen):
             Static("Issue Details", id="content_header"),
             Static("Loading...", id="issue-metadata"),
             VerticalScroll(
-                Collapsible(Markdown("", id="issue-content"), title="Description", collapsed=True),
+                Collapsible(Markdown("", id="issue-content"), title="Description"),
                 Collapsible(
                     Comments(id="comments-widget"),
                     title="Comments",
-                    collapsed=True,
+                    collapsed=False,
                     id="comments-section",
                 ),
                 id="detail-container",

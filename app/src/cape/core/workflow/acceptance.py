@@ -6,8 +6,6 @@ from typing import Callable, Optional
 
 from cape.core.agent import execute_template
 from cape.core.agents.claude import ClaudeAgentTemplateRequest
-from cape.core.models import CapeComment
-from cape.core.notifications import insert_progress_comment
 from cape.core.workflow.shared import AGENT_IMPLEMENTOR
 from cape.core.workflow.types import StepResult
 
@@ -69,20 +67,6 @@ def notify_plan_acceptance(
             return StepResult.fail(
                 f"Failed to execute /plan-acceptance template: {response.output}"
             )
-
-        # Insert progress comment with artifact
-        comment = CapeComment(
-            issue_id=issue_id,
-            comment="Plan acceptance validation completed",
-            raw={"validation_output": response.output[:1000]},  # First 1000 chars of output
-            source="system",
-            type="artifact",
-        )
-        status, msg = insert_progress_comment(comment)
-        if status != "success":
-            logger.error(f"Failed to insert plan acceptance comment: {msg}")
-        else:
-            logger.debug(f"Plan acceptance comment inserted: {msg}")
 
         return StepResult.ok(None)
 

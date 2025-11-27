@@ -8,7 +8,7 @@ from cape.core.notifications import insert_progress_comment, make_progress_comme
 from cape.core.workflow.acceptance import notify_plan_acceptance
 from cape.core.workflow.address_review import address_review_issues
 from cape.core.workflow.classify import classify_issue
-from cape.core.workflow.implement import implement_plan, parse_implement_output
+from cape.core.workflow.implement import implement_plan
 from cape.core.workflow.plan import build_plan
 from cape.core.workflow.plan_file import get_plan_file
 from cape.core.workflow.review import generate_review
@@ -109,7 +109,7 @@ def execute_workflow(
     comment = CapeComment(
         issue_id=issue_id,
         comment=comment_text,
-        raw=classification_data,
+        raw={"text": comment_text},
         source="system",
         type="workflow",
     )
@@ -129,7 +129,7 @@ def execute_workflow(
     comment = CapeComment(
         issue_id=issue_id,
         comment="Implementation plan created successfully",
-        raw={},
+        raw={"text": "Implementation plan created successfully."},
         source="system",
         type="workflow",
     )
@@ -158,13 +158,21 @@ def execute_workflow(
         logger.error(f"Error implementing solution: {implement_response.error}")
         return False
     logger.info(" Solution implemented")
-
-    # Log implementation output (deprecated parsing function)
-    logger.info("\n=== Logging implementation output ===")
     if implement_response.data is None:
         logger.error("Implementation data missing despite successful response")
         return False
-    parse_implement_output(implement_response.data.output, logger)
+    logger.debug("Output preview: %s...", implement_response.data.output[:200])
+
+    # Insert progress comment - best-effort, non-blocking
+    comment = CapeComment(
+        issue_id=issue_id,
+        comment="Implementation complete.",
+        raw={"text": "Implementation complete."},
+        source="system",
+        type="workflow",
+    )
+    status, msg = insert_progress_comment(comment)
+    logger.debug(msg) if status == "success" else logger.error(msg)
 
     # Find the plan file that was implemented
     logger.info("\n=== Finding implemented plan file ===")
@@ -203,6 +211,17 @@ def execute_workflow(
                 f"CodeRabbit review generated successfully at {review_result.data.review_file}"
             )
 
+            # Insert progress comment - best-effort, non-blocking
+            comment = CapeComment(
+                issue_id=issue_id,
+                comment="CodeRabbit review complete.",
+                raw={"text": "CodeRabbit review complete."},
+                source="system",
+                type="workflow",
+            )
+            status, msg = insert_progress_comment(comment)
+            logger.debug(msg) if status == "success" else logger.error(msg)
+
             # Notify the /address-review-issues template
             logger.info("\n=== Notifying review template ===")
             review_handler = make_progress_comment_handler(issue_id, adw_id, logger)
@@ -215,6 +234,15 @@ def execute_workflow(
                 # Continue workflow even if notification fails
             else:
                 logger.info("Review template notified successfully")
+
+            # Insert progress comment - best-effort, non-blocking
+            comment = CapeComment(
+                issue_id=issue_id,
+                comment="Review issues addressed.",
+                raw={"text": "Review issues addressed."},
+                source="system",
+                type="workflow",
+            )
 
     # Validate plan acceptance
     logger.info("\n=== Validating plan acceptance ===")
@@ -229,6 +257,20 @@ def execute_workflow(
     else:
         logger.info("Plan acceptance validated successfully")
 
+    # Insert progress comment with artifact
+    comment = CapeComment(
+        issue_id=issue_id,
+        comment="Plan acceptance validation completed",
+        raw={"text": "Plan acceptance validation completed."},
+        source="system",
+        type="workflow",
+    )
+    status, msg = insert_progress_comment(comment)
+    if status != "success":
+        logger.error(f"Failed to insert plan acceptance comment: {msg}")
+    else:
+        logger.debug(f"Plan acceptance comment inserted: {msg}")
+
     # Update status to "completed" - best-effort, non-blocking
     update_status(issue_id, "completed", logger)
 
@@ -236,7 +278,7 @@ def execute_workflow(
     comment = CapeComment(
         issue_id=issue_id,
         comment="Solution implemented successfully",
-        raw={},
+        raw={"text": "Solution implemented successfully."},
         source="system",
         type="workflow",
     )
