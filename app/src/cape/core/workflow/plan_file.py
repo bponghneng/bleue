@@ -24,7 +24,7 @@ def get_plan_file(
     """
     request = ClaudeAgentTemplateRequest(
         agent_name=AGENT_PLAN_FINDER,
-        slash_command="/triage:find-plan-file",
+        slash_command="/adw-find-plan-file",
         args=[plan_output],
         adw_id=adw_id,
         issue_id=issue_id,

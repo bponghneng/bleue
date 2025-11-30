@@ -37,12 +37,12 @@ def notify_plan_acceptance(
             logger.error(f"Plan file does not exist: {plan_path}")
             return StepResult.fail(f"Plan file does not exist: {plan_path}")
 
-        logger.debug(f"Invoking /plan-acceptance template with plan file: {plan_path}")
+        logger.debug(f"Invoking /adw-acceptance template with plan file: {plan_path}")
 
         # Create template request
         request = ClaudeAgentTemplateRequest(
             agent_name=AGENT_IMPLEMENTOR,
-            slash_command="/plan-acceptance",
+            slash_command="/adw-acceptance",
             args=[plan_path],
             adw_id=adw_id,
             issue_id=issue_id,
@@ -63,10 +63,8 @@ def notify_plan_acceptance(
         )
 
         if not response.success:
-            logger.error(f"Failed to execute /plan-acceptance template: {response.output}")
-            return StepResult.fail(
-                f"Failed to execute /plan-acceptance template: {response.output}"
-            )
+            logger.error(f"Failed to execute /adw-acceptance template: {response.output}")
+            return StepResult.fail(f"Failed to execute /adw-acceptance template: {response.output}")
 
         return StepResult.ok(None)
 

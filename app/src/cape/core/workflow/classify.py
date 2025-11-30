@@ -30,7 +30,7 @@ def classify_issue(
     """
     request = ClaudeAgentTemplateRequest(
         agent_name=AGENT_CLASSIFIER,
-        slash_command="/triage:classify",
+        slash_command="/adw-classify",
         args=[issue.description],
         adw_id=adw_id,
         issue_id=issue.id,
@@ -79,7 +79,7 @@ def classify_issue(
     if normalized_level not in valid_levels:
         return StepResult.fail(f"Invalid complexity level selected: {complexity_level}")
 
-    triage_command = cast(ClassifySlashCommand, f"/triage:{normalized_type}")
+    triage_command = cast(ClassifySlashCommand, f"/adw-{normalized_type}-plan")
     normalized_classification = {
         "type": normalized_type,
         "level": normalized_level,

@@ -37,12 +37,12 @@ def address_review_issues(
             logger.error(f"Review file does not exist: {review_file}")
             return StepResult.fail(f"Review file does not exist: {review_file}")
 
-        logger.debug(f"Invoking /address-review-issues template with review file: {review_file}")
+        logger.debug(f"Invoking /adw-implement-review template with review file: {review_file}")
 
         # Call execute_template with the review file
         request = ClaudeAgentTemplateRequest(
             agent_name=AGENT_IMPLEMENTOR,
-            slash_command="/address-review-issues",
+            slash_command="/adw-implement-review",
             args=[review_file],
             adw_id=adw_id,
             issue_id=issue_id,
@@ -62,9 +62,9 @@ def address_review_issues(
         )
 
         if not response.success:
-            logger.error(f"Failed to execute /address-review-issues template: {response.output}")
+            logger.error(f"Failed to execute /adw-implement-review template: {response.output}")
             return StepResult.fail(
-                f"Failed to execute /address-review-issues template: {response.output}"
+                f"Failed to execute /adw-implement-review template: {response.output}"
             )
 
         # Insert progress comment with template output
