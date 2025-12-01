@@ -1,5 +1,7 @@
 """Pull request preparation step implementation."""
 
+import json
+
 from cape.core.agent import execute_template
 from cape.core.agents.claude import ClaudeAgentTemplateRequest
 from cape.core.notifications import make_progress_comment_handler
@@ -33,9 +35,7 @@ class PreparePullRequestStep(WorkflowStep):
         logger = context.logger
 
         try:
-            pr_handler = make_progress_comment_handler(
-                context.issue_id, context.adw_id, logger
-            )
+            pr_handler = make_progress_comment_handler(context.issue_id, context.adw_id, logger)
 
             request = ClaudeAgentTemplateRequest(
                 agent_name=AGENT_IMPLEMENTOR,
@@ -62,6 +62,9 @@ class PreparePullRequestStep(WorkflowStep):
                 return False
 
             logger.info("Pull request prepared successfully")
+
+            # Parse and store PR details for CreatePullRequestStep
+            self._store_pr_details(response.output, context, logger)
 
             # Insert progress comment - best-effort, non-blocking
             emit_progress_comment(
@@ -100,3 +103,30 @@ class PreparePullRequestStep(WorkflowStep):
             logger,
             raw={"text": "Solution implemented successfully."},
         )
+
+    def _store_pr_details(self, output: str, context: WorkflowContext, logger) -> None:
+        """Parse and store PR details in context for CreatePullRequestStep.
+
+        Args:
+            output: The output from /adw-pull-request command
+            context: Workflow context
+            logger: Logger instance
+        """
+        try:
+            pr_data = json.loads(output)
+            # Store PR details for CreatePullRequestStep
+            context.data["pr_details"] = {
+                "title": pr_data.get("title", ""),
+                "summary": pr_data.get("summary", ""),
+                "commits": pr_data.get("commits", []),
+            }
+            logger.debug(
+                "Stored PR details in context: title=%s, commits=%d",
+                context.data["pr_details"]["title"],
+                len(context.data["pr_details"]["commits"]),
+            )
+        except json.JSONDecodeError as e:
+            logger.warning(f"Failed to parse PR details JSON: {e}")
+            # Don't fail the step, just log the warning
+        except Exception as e:
+            logger.warning(f"Error storing PR details: {e}")

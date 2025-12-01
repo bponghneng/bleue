@@ -70,6 +70,7 @@ def get_default_pipeline() -> List[WorkflowStep]:
     # Import here to avoid circular imports
     from cape.core.workflow.steps.acceptance import ValidateAcceptanceStep
     from cape.core.workflow.steps.classify import ClassifyStep
+    from cape.core.workflow.steps.create_pr import CreatePullRequestStep
     from cape.core.workflow.steps.fetch import FetchIssueStep
     from cape.core.workflow.steps.implement import FindImplementedPlanStep, ImplementStep
     from cape.core.workflow.steps.plan import BuildPlanStep, FindPlanFileStep
@@ -89,4 +90,5 @@ def get_default_pipeline() -> List[WorkflowStep]:
         CodeQualityStep(),
         ValidateAcceptanceStep(),
         PreparePullRequestStep(),
+        CreatePullRequestStep(),
     ]
