@@ -481,7 +481,8 @@ def test_create_pr_step_success(mock_emit, mock_subprocess, mock_logger):
 
 
 @patch.dict("os.environ", {}, clear=True)
-def test_create_pr_step_missing_github_pat(mock_logger):
+@patch("cape.core.workflow.steps.create_pr.emit_progress_comment")
+def test_create_pr_step_missing_github_pat(mock_emit, mock_logger):
     """Test PR creation skipped when GITHUB_PAT is missing."""
     from cape.core.workflow.step_base import WorkflowContext
     from cape.core.workflow.steps.create_pr import CreatePullRequestStep
@@ -500,9 +501,12 @@ def test_create_pr_step_missing_github_pat(mock_logger):
     mock_logger.warning.assert_called_with(
         "GITHUB_PAT environment variable not set, skipping PR creation"
     )
+    mock_emit.assert_called_once()
+    assert mock_emit.call_args[1]["raw"]["output"] == "pull-request-failed"
 
 
-def test_create_pr_step_missing_pr_details(mock_logger):
+@patch("cape.core.workflow.steps.create_pr.emit_progress_comment")
+def test_create_pr_step_missing_pr_details(mock_emit, mock_logger):
     """Test PR creation skipped when pr_details is missing."""
     from cape.core.workflow.step_base import WorkflowContext
     from cape.core.workflow.steps.create_pr import CreatePullRequestStep
@@ -515,10 +519,13 @@ def test_create_pr_step_missing_pr_details(mock_logger):
 
     assert result.success is False
     mock_logger.warning.assert_called_with("No PR details found in context, skipping PR creation")
+    mock_emit.assert_called_once()
+    assert mock_emit.call_args[1]["raw"]["output"] == "pull-request-failed"
 
 
+@patch("cape.core.workflow.steps.create_pr.emit_progress_comment")
 @patch.dict("os.environ", {"GITHUB_PAT": "test-token"})
-def test_create_pr_step_empty_title(mock_logger):
+def test_create_pr_step_empty_title(mock_emit, mock_logger):
     """Test PR creation skipped when title is empty."""
     from cape.core.workflow.step_base import WorkflowContext
     from cape.core.workflow.steps.create_pr import CreatePullRequestStep
@@ -535,11 +542,14 @@ def test_create_pr_step_empty_title(mock_logger):
 
     assert result.success is False
     mock_logger.warning.assert_called_with("PR title is empty, skipping PR creation")
+    mock_emit.assert_called_once()
+    assert mock_emit.call_args[1]["raw"]["output"] == "pull-request-failed"
 
 
+@patch("cape.core.workflow.steps.create_pr.emit_progress_comment")
 @patch("cape.core.workflow.steps.create_pr.subprocess.run")
 @patch.dict("os.environ", {"GITHUB_PAT": "test-token"})
-def test_create_pr_step_gh_command_failure(mock_subprocess, mock_logger):
+def test_create_pr_step_gh_command_failure(mock_subprocess, mock_emit, mock_logger):
     """Test PR creation handles gh command failure."""
     from cape.core.workflow.step_base import WorkflowContext
     from cape.core.workflow.steps.create_pr import CreatePullRequestStep
@@ -562,11 +572,14 @@ def test_create_pr_step_gh_command_failure(mock_subprocess, mock_logger):
 
     assert result.success is False
     mock_logger.warning.assert_called()
+    mock_emit.assert_called_once()
+    assert mock_emit.call_args[1]["raw"]["output"] == "pull-request-failed"
 
 
+@patch("cape.core.workflow.steps.create_pr.emit_progress_comment")
 @patch("cape.core.workflow.steps.create_pr.subprocess.run")
 @patch.dict("os.environ", {"GITHUB_PAT": "test-token"})
-def test_create_pr_step_timeout(mock_subprocess, mock_logger):
+def test_create_pr_step_timeout(mock_subprocess, mock_emit, mock_logger):
     """Test PR creation handles timeout."""
     import subprocess
 
@@ -587,11 +600,14 @@ def test_create_pr_step_timeout(mock_subprocess, mock_logger):
 
     assert result.success is False
     mock_logger.warning.assert_called_with("gh pr create timed out after 120 seconds")
+    mock_emit.assert_called_once()
+    assert mock_emit.call_args[1]["raw"]["output"] == "pull-request-failed"
 
 
+@patch("cape.core.workflow.steps.create_pr.emit_progress_comment")
 @patch("cape.core.workflow.steps.create_pr.subprocess.run")
 @patch.dict("os.environ", {"GITHUB_PAT": "test-token"})
-def test_create_pr_step_gh_not_found(mock_subprocess, mock_logger):
+def test_create_pr_step_gh_not_found(mock_subprocess, mock_emit, mock_logger):
     """Test PR creation handles gh CLI not found."""
     from cape.core.workflow.step_base import WorkflowContext
     from cape.core.workflow.steps.create_pr import CreatePullRequestStep
@@ -610,6 +626,8 @@ def test_create_pr_step_gh_not_found(mock_subprocess, mock_logger):
 
     assert result.success is False
     mock_logger.warning.assert_called_with("gh CLI not found, skipping PR creation")
+    mock_emit.assert_called_once()
+    assert mock_emit.call_args[1]["raw"]["output"] == "pull-request-failed"
 
 
 def test_create_pr_step_is_not_critical():

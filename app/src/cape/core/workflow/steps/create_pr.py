@@ -34,22 +34,43 @@ class CreatePullRequestStep(WorkflowStep):
         # Check for pr_details in context
         pr_details = context.data.get("pr_details")
         if not pr_details:
-            logger.warning("No PR details found in context, skipping PR creation")
-            return StepResult.fail("No PR details found in context, skipping PR creation")
+            error_msg = "No PR details found in context, skipping PR creation"
+            logger.warning(error_msg)
+            emit_progress_comment(
+                context.issue_id,
+                error_msg,
+                logger,
+                raw={"output": "pull-request-failed", "error": error_msg},
+            )
+            return StepResult.fail(error_msg)
 
         title = pr_details.get("title", "")
         summary = pr_details.get("summary", "")
         commits = pr_details.get("commits", [])
 
         if not title:
-            logger.warning("PR title is empty, skipping PR creation")
-            return StepResult.fail("PR title is empty, skipping PR creation")
+            error_msg = "PR title is empty, skipping PR creation"
+            logger.warning(error_msg)
+            emit_progress_comment(
+                context.issue_id,
+                error_msg,
+                logger,
+                raw={"output": "pull-request-failed", "error": error_msg},
+            )
+            return StepResult.fail(error_msg)
 
         # Check for GITHUB_PAT environment variable
         github_pat = os.environ.get("GITHUB_PAT")
         if not github_pat:
-            logger.warning("GITHUB_PAT environment variable not set, skipping PR creation")
-            return StepResult.fail("GITHUB_PAT environment variable not set, skipping PR creation")
+            error_msg = "GITHUB_PAT environment variable not set, skipping PR creation"
+            logger.warning(error_msg)
+            emit_progress_comment(
+                context.issue_id,
+                error_msg,
+                logger,
+                raw={"output": "pull-request-failed", "error": error_msg},
+            )
+            return StepResult.fail(error_msg)
 
         try:
             # Build gh pr create command
@@ -78,14 +99,19 @@ class CreatePullRequestStep(WorkflowStep):
             )
 
             if result.returncode != 0:
+                error_msg = f"gh pr create failed (exit code {result.returncode}): {result.stderr}"
                 logger.warning(
                     "gh pr create failed (exit code %d): %s",
                     result.returncode,
                     result.stderr,
                 )
-                return StepResult.fail(
-                    f"gh pr create failed (exit code {result.returncode}): {result.stderr}"
+                emit_progress_comment(
+                    context.issue_id,
+                    error_msg,
+                    logger,
+                    raw={"output": "pull-request-failed", "error": error_msg},
                 )
+                return StepResult.fail(error_msg)
 
             # Parse PR URL from output (gh pr create outputs the URL)
             pr_url = result.stdout.strip()
@@ -107,11 +133,32 @@ class CreatePullRequestStep(WorkflowStep):
             return StepResult.ok(None)
 
         except subprocess.TimeoutExpired:
-            logger.warning("gh pr create timed out after 120 seconds")
-            return StepResult.fail("gh pr create timed out after 120 seconds")
+            error_msg = "gh pr create timed out after 120 seconds"
+            logger.warning(error_msg)
+            emit_progress_comment(
+                context.issue_id,
+                error_msg,
+                logger,
+                raw={"output": "pull-request-failed", "error": error_msg},
+            )
+            return StepResult.fail(error_msg)
         except FileNotFoundError:
-            logger.warning("gh CLI not found, skipping PR creation")
-            return StepResult.fail("gh CLI not found, skipping PR creation")
+            error_msg = "gh CLI not found, skipping PR creation"
+            logger.warning(error_msg)
+            emit_progress_comment(
+                context.issue_id,
+                error_msg,
+                logger,
+                raw={"output": "pull-request-failed", "error": error_msg},
+            )
+            return StepResult.fail(error_msg)
         except Exception as e:
-            logger.warning(f"Error creating pull request: {e}")
-            return StepResult.fail(f"Error creating pull request: {e}")
+            error_msg = f"Error creating pull request: {e}"
+            logger.warning(error_msg)
+            emit_progress_comment(
+                context.issue_id,
+                error_msg,
+                logger,
+                raw={"output": "pull-request-failed", "error": error_msg},
+            )
+            return StepResult.fail(error_msg)
