@@ -7,6 +7,7 @@ For new code, prefer importing from cape.core.agents directly:
     from cape.core.agents import get_agent, AgentExecuteRequest
 """
 
+import json
 import logging
 from typing import Callable, Optional
 
@@ -90,7 +91,8 @@ def execute_template(
     """Execute a Claude Code template with slash command and arguments.
 
     Legacy function for backward compatibility. Delegates to Claude provider
-    template helper.
+    template helper. Enforces JSON parsing and emits progress comments with
+    parsed data in the raw field.
 
     Args:
         request: Claude-specific template request
@@ -99,7 +101,42 @@ def execute_template(
     Returns:
         Claude-specific prompt response
     """
-    return execute_claude_template(request, stream_handler=stream_handler)
+    response = execute_claude_template(request, stream_handler=stream_handler)
+    logger = _get_issue_logger(request.adw_id)
+
+    # Import here to avoid circular import
+    from cape.core.workflow.workflow_io import emit_progress_comment
+
+    # Attempt to parse output as JSON and emit progress comment
+    if response.success and response.output:
+        raw_output = response.output.strip()
+        try:
+            parsed_json = json.loads(raw_output)
+            # Emit progress comment with parsed JSON in raw field
+            emit_progress_comment(
+                issue_id=request.issue_id,
+                message=f"Template {request.slash_command} completed",
+                logger=logger,
+                raw={"template": request.slash_command, "result": parsed_json},
+                comment_type="workflow",
+            )
+            logger.debug("Template output parsed as JSON successfully")
+        except json.JSONDecodeError as exc:
+            # Emit error progress comment for non-JSON output
+            logger.debug("Template output is not valid JSON: %s", exc)
+            emit_progress_comment(
+                issue_id=request.issue_id,
+                message=f"Template {request.slash_command} returned non-JSON output",
+                logger=logger,
+                raw={
+                    "template": request.slash_command,
+                    "error": str(exc),
+                    "output": raw_output[:500],
+                },
+                comment_type="workflow",
+            )
+
+    return response
 
 
 def execute_agent_prompt(
