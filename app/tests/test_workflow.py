@@ -393,7 +393,7 @@ def test_address_review_issues_success(
 
     assert result.success
     mock_exists.assert_called_once_with("specs/chore-test-review.txt")
-    mock_execute.assert_called_once_with(mock_request, stream_handler=None)
+    mock_execute.assert_called_once_with(mock_request, stream_handler=None, require_json=False)
     mock_insert_comment.assert_called_once()
 
 

@@ -207,3 +207,132 @@ def test_execute_template(mock_popen, mock_check, tmp_path, monkeypatch):
 
     response = execute_template(request)
     assert response.success is True
+
+
+class TestSanitizeJsonOutput:
+    """Tests for _sanitize_json_output helper function."""
+
+    def test_sanitize_json_with_json_fence(self):
+        """Test stripping ```json ... ``` fences."""
+        from cape.core.agent import _sanitize_json_output
+
+        output = '```json\n{"key": "value"}\n```'
+        result = _sanitize_json_output(output)
+        assert result == '{"key": "value"}'
+
+    def test_sanitize_json_with_plain_fence(self):
+        """Test stripping ``` ... ``` fences (no language specifier)."""
+        from cape.core.agent import _sanitize_json_output
+
+        output = '```\n{"key": "value"}\n```'
+        result = _sanitize_json_output(output)
+        assert result == '{"key": "value"}'
+
+    def test_sanitize_json_without_fence(self):
+        """Test plain JSON without fences is returned unchanged."""
+        from cape.core.agent import _sanitize_json_output
+
+        output = '{"key": "value"}'
+        result = _sanitize_json_output(output)
+        assert result == '{"key": "value"}'
+
+    def test_sanitize_plain_text_without_fence(self):
+        """Test plain text without fences is returned unchanged."""
+        from cape.core.agent import _sanitize_json_output
+
+        output = "specs/feature-plan.md"
+        result = _sanitize_json_output(output)
+        assert result == "specs/feature-plan.md"
+
+    def test_sanitize_json_with_whitespace(self):
+        """Test stripping fences with surrounding whitespace."""
+        from cape.core.agent import _sanitize_json_output
+
+        output = '  \n```json\n{"key": "value"}\n```  \n'
+        result = _sanitize_json_output(output)
+        assert result == '{"key": "value"}'
+
+
+@patch("cape.core.notifications.comments.create_comment")
+@patch("cape.core.agents.claude.claude.check_claude_installed")
+@patch("subprocess.Popen")
+def test_execute_template_require_json_false(
+    mock_popen, mock_check, mock_create_comment, tmp_path, monkeypatch
+):
+    """Test execute_template with require_json=False allows plain text output."""
+    monkeypatch.setenv("CAPE_AGENTS_DIR", str(tmp_path))
+    mock_check.return_value = None
+
+    # Mock execution that returns plain text (not JSON)
+    result_msg = {
+        "type": "result",
+        "is_error": False,
+        "result": "specs/feature-plan.md",
+        "session_id": "test",
+    }
+
+    stdout_stream = StringIO(json.dumps(result_msg) + "\n")
+    stderr_stream = StringIO("")
+
+    process_mock = Mock()
+    process_mock.stdout = stdout_stream
+    process_mock.stderr = stderr_stream
+    process_mock.wait.return_value = None
+    process_mock.returncode = 0
+
+    mock_popen.return_value = process_mock
+
+    request = AgentTemplateRequest(
+        agent_name="ops",
+        slash_command="/adw-find-plan-file",
+        args=["output"],
+        adw_id="test123",
+        issue_id=1,
+    )
+
+    # Should not error even though output is not JSON
+    response = execute_template(request, require_json=False)
+    assert response.success is True
+    assert response.output == "specs/feature-plan.md"
+
+
+@patch("cape.core.notifications.comments.create_comment")
+@patch("cape.core.agents.claude.claude.check_claude_installed")
+@patch("subprocess.Popen")
+def test_execute_template_sanitizes_markdown_fence(
+    mock_popen, mock_check, mock_create_comment, tmp_path, monkeypatch
+):
+    """Test execute_template strips Markdown fences before parsing JSON."""
+    monkeypatch.setenv("CAPE_AGENTS_DIR", str(tmp_path))
+    mock_check.return_value = None
+
+    # Mock execution that returns JSON wrapped in Markdown fences
+    result_msg = {
+        "type": "result",
+        "is_error": False,
+        "result": '```json\n{"status": "success"}\n```',
+        "session_id": "test",
+    }
+
+    stdout_stream = StringIO(json.dumps(result_msg) + "\n")
+    stderr_stream = StringIO("")
+
+    process_mock = Mock()
+    process_mock.stdout = stdout_stream
+    process_mock.stderr = stderr_stream
+    process_mock.wait.return_value = None
+    process_mock.returncode = 0
+
+    mock_popen.return_value = process_mock
+
+    request = AgentTemplateRequest(
+        agent_name="ops",
+        slash_command="/adw-classify",
+        args=["issue"],
+        adw_id="test123",
+        issue_id=1,
+    )
+
+    # Should successfully parse JSON after stripping fences
+    response = execute_template(request)
+    assert response.success is True
