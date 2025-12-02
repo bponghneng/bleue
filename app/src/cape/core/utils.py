@@ -14,6 +14,25 @@ def make_adw_id() -> str:
     return str(uuid.uuid4())[:8]
 
 
+def _get_log_level() -> int:
+    """Get log level from CAPE_LOG_LEVEL environment variable.
+
+    Supports: DEBUG, INFO, WARNING, ERROR (case-insensitive).
+    Defaults to INFO if not set or invalid.
+
+    Returns:
+        Logging level constant
+    """
+    level_str = os.environ.get("CAPE_LOG_LEVEL", "INFO").upper()
+    level_map = {
+        "DEBUG": logging.DEBUG,
+        "INFO": logging.INFO,
+        "WARNING": logging.WARNING,
+        "ERROR": logging.ERROR,
+    }
+    return level_map.get(level_str, logging.INFO)
+
+
 def setup_logger(
     adw_id: str,
     trigger_type: str = "adw_plan_build",
@@ -23,6 +42,10 @@ def setup_logger(
     backup_count: int = 5,
 ) -> logging.Logger:
     """Set up logger that writes to both console and file using adw_id.
+
+    Log level is configurable via CAPE_LOG_LEVEL environment variable.
+    Supported values: DEBUG, INFO, WARNING, ERROR (case-insensitive).
+    Default: INFO.
 
     Args:
         adw_id: The workflow ID
@@ -77,9 +100,10 @@ def setup_logger(
     logger.addHandler(file_handler)
 
     # Console handler - only if not in detached mode
+    # Uses CAPE_LOG_LEVEL for console output (file always captures DEBUG)
     if not detached_mode:
         console_handler = logging.StreamHandler(sys.stdout)
-        console_handler.setLevel(logging.DEBUG)
+        console_handler.setLevel(_get_log_level())
 
         # Simpler format for console
         console_formatter = logging.Formatter("%(message)s")
