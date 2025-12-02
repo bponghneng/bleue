@@ -46,25 +46,47 @@ def emit_progress_comment(
     return status, msg
 
 
-def log_step_start(step_name: str, logger: Logger) -> None:
-    """Log the start of a workflow step.
+def log_step_start(step_name: str, logger: Logger, issue_id: int | None = None) -> None:
+    """Log the start of a workflow step and emit progress comment.
 
     Args:
         step_name: Name of the step starting
         logger: Logger instance
+        issue_id: Optional Cape issue ID for progress comment
     """
     logger.info(f"\n=== {step_name} ===")
+    if issue_id is not None:
+        emit_progress_comment(
+            issue_id=issue_id,
+            message=f"Step {step_name} started",
+            logger=logger,
+            raw={"step": step_name, "status": "started"},
+            comment_type="workflow",
+        )
 
 
-def log_step_end(step_name: str, success: bool, logger: Logger) -> None:
-    """Log the end of a workflow step.
+def log_step_end(
+    step_name: str, success: bool, logger: Logger, issue_id: int | None = None
+) -> None:
+    """Log the end of a workflow step and emit progress comment.
 
     Args:
         step_name: Name of the step ending
         success: Whether the step succeeded
         logger: Logger instance
+        issue_id: Optional Cape issue ID for progress comment
     """
+    status_text = "Success" if success else "Failed"
     if success:
         logger.info(f"{step_name} completed successfully")
     else:
         logger.error(f"{step_name} failed")
+
+    if issue_id is not None:
+        emit_progress_comment(
+            issue_id=issue_id,
+            message=f"Step {step_name} completed: {status_text}",
+            logger=logger,
+            raw={"step": step_name, "status": "completed", "success": success},
+            comment_type="workflow",
+        )
