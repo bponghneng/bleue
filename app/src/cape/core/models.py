@@ -26,7 +26,19 @@ class CapeIssue(BaseModel):
     title: Optional[str] = None
     description: str = Field(..., min_length=1)
     status: Literal["pending", "started", "completed"] = "pending"
-    assigned_to: Optional[Literal["alleycat-1", "tydirium-1"]] = None
+    assigned_to: Optional[
+        Literal[
+            "alleycat-1",
+            "alleycat-2",
+            "alleycat-3",
+            "nebuchadnezzar-1",
+            "nebuchadnezzar-2",
+            "nebuchadnezzar-3",
+            "tydirium-1",
+            "tydirium-2",
+            "tydirium-3",
+        ]
+    ] = None
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
 
