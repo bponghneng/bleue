@@ -4,8 +4,19 @@ from logging import Logger
 
 from cape.core.agent import execute_implement_plan
 from cape.core.agents import AgentExecuteResponse
+from cape.core.workflow.json_parser import parse_and_validate_json
 from cape.core.workflow.shared import AGENT_IMPLEMENTOR
 from cape.core.workflow.types import ImplementData, StepResult
+
+# Required fields for implement output JSON
+IMPLEMENT_REQUIRED_FIELDS = {
+    "files_modified": list,
+    "git_diff_stat": str,
+    "output": str,
+    "planPath": str,
+    "status": str,
+    "summary": str,
+}
 
 
 def implement_plan(
@@ -43,4 +54,14 @@ def implement_plan(
     if not response.success:
         return StepResult.fail(response.output)
 
-    return StepResult.ok(ImplementData(output=response.output, session_id=response.session_id))
+    # Parse and validate JSON output
+    parse_result = parse_and_validate_json(
+        response.output, IMPLEMENT_REQUIRED_FIELDS, logger, step_name="implement"
+    )
+    if not parse_result.success:
+        return StepResult.fail(parse_result.error)
+
+    return StepResult.ok(
+        ImplementData(output=response.output, session_id=response.session_id),
+        parsed_data=parse_result.data,
+    )

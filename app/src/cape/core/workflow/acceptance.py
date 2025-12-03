@@ -6,8 +6,20 @@ from typing import Callable, Optional
 
 from cape.core.agent import execute_template
 from cape.core.agents.claude import ClaudeAgentTemplateRequest
+from cape.core.workflow.json_parser import parse_and_validate_json
 from cape.core.workflow.shared import AGENT_IMPLEMENTOR
 from cape.core.workflow.types import StepResult
+
+# Required fields for acceptance validation output JSON
+ACCEPTANCE_REQUIRED_FIELDS = {
+    "output": str,
+    "notes": list,
+    "plan_title": str,
+    "requirements": list,
+    "status": str,
+    "summary": str,
+    "unmet_blocking_requirements": list,
+}
 
 
 def notify_plan_acceptance(
@@ -66,7 +78,14 @@ def notify_plan_acceptance(
             logger.error(f"Failed to execute /adw-acceptance template: {response.output}")
             return StepResult.fail(f"Failed to execute /adw-acceptance template: {response.output}")
 
-        return StepResult.ok(None)
+        # Parse and validate JSON output
+        parse_result = parse_and_validate_json(
+            response.output, ACCEPTANCE_REQUIRED_FIELDS, logger, step_name="acceptance"
+        )
+        if not parse_result.success:
+            return StepResult.fail(parse_result.error)
+
+        return StepResult.ok(None, parsed_data=parse_result.data)
 
     except Exception as e:
         logger.error(f"Failed to notify plan acceptance template: {e}")

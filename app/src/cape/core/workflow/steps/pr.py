@@ -1,15 +1,22 @@
 """Pull request preparation step implementation."""
 
-import json
-
 from cape.core.agent import execute_template
 from cape.core.agents.claude import ClaudeAgentTemplateRequest
 from cape.core.notifications import make_progress_comment_handler
+from cape.core.workflow.json_parser import parse_and_validate_json
 from cape.core.workflow.shared import AGENT_IMPLEMENTOR
 from cape.core.workflow.status import update_status
 from cape.core.workflow.step_base import WorkflowContext, WorkflowStep
 from cape.core.workflow.types import StepResult
 from cape.core.workflow.workflow_io import emit_progress_comment
+
+# Required fields for pull request output JSON
+PR_REQUIRED_FIELDS = {
+    "output": str,
+    "title": str,
+    "summary": str,
+    "commits": list,
+}
 
 
 class PreparePullRequestStep(WorkflowStep):
@@ -62,23 +69,33 @@ class PreparePullRequestStep(WorkflowStep):
                 self._finalize_workflow(context)
                 return StepResult.fail(f"Pull request preparation failed: {response.output}")
 
+            # Parse and validate JSON output
+            parse_result = parse_and_validate_json(
+                response.output, PR_REQUIRED_FIELDS, logger, step_name="pull_request"
+            )
+            if not parse_result.success:
+                logger.warning(f"Pull request JSON parsing failed: {parse_result.error}")
+                # Still mark workflow as completed even if parse fails
+                self._finalize_workflow(context)
+                return StepResult.fail(parse_result.error)
+
             logger.info("Pull request prepared successfully")
 
-            # Parse and store PR details for CreatePullRequestStep
-            self._store_pr_details(response.output, context, logger)
+            # Store PR details for CreatePullRequestStep using validated data
+            self._store_pr_details(parse_result.data, context, logger)
 
             # Insert progress comment - best-effort, non-blocking
             emit_progress_comment(
                 context.issue_id,
                 "Pull request prepared.",
                 logger,
-                raw={"text": "Pull request prepared."},
+                raw={"text": "Pull request prepared.", "result": parse_result.data},
             )
 
             # Finalize workflow
             self._finalize_workflow(context)
 
-            return StepResult.ok(None)
+            return StepResult.ok(None, parsed_data=parse_result.data)
 
         except Exception as e:
             logger.warning(f"Pull request preparation failed: {e}")
@@ -105,29 +122,22 @@ class PreparePullRequestStep(WorkflowStep):
             raw={"text": "Solution implemented successfully."},
         )
 
-    def _store_pr_details(self, output: str, context: WorkflowContext, logger) -> None:
-        """Parse and store PR details in context for CreatePullRequestStep.
+    def _store_pr_details(self, pr_data: dict, context: WorkflowContext, logger) -> None:
+        """Store validated PR details in context for CreatePullRequestStep.
 
         Args:
-            output: The output from /adw-pull-request command
+            pr_data: The validated parsed PR data dict
             context: Workflow context
             logger: Logger instance
         """
-        try:
-            pr_data = json.loads(output)
-            # Store PR details for CreatePullRequestStep
-            context.data["pr_details"] = {
-                "title": pr_data.get("title", ""),
-                "summary": pr_data.get("summary", ""),
-                "commits": pr_data.get("commits", []),
-            }
-            logger.debug(
-                "Stored PR details in context: title=%s, commits=%d",
-                context.data["pr_details"]["title"],
-                len(context.data["pr_details"]["commits"]),
-            )
-        except json.JSONDecodeError as e:
-            logger.warning(f"Failed to parse PR details JSON: {e}")
-            # Don't fail the step, just log the warning
-        except Exception as e:
-            logger.warning(f"Error storing PR details: {e}")
+        # Store PR details for CreatePullRequestStep
+        context.data["pr_details"] = {
+            "title": pr_data.get("title", ""),
+            "summary": pr_data.get("summary", ""),
+            "commits": pr_data.get("commits", []),
+        }
+        logger.debug(
+            "Stored PR details in context: title=%s, commits=%d",
+            context.data["pr_details"]["title"],
+            len(context.data["pr_details"]["commits"]),
+        )

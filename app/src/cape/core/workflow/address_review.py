@@ -8,8 +8,16 @@ from cape.core.agent import execute_template
 from cape.core.agents.claude import ClaudeAgentTemplateRequest
 from cape.core.models import CapeComment
 from cape.core.notifications import insert_progress_comment
+from cape.core.workflow.json_parser import parse_and_validate_json
 from cape.core.workflow.shared import AGENT_IMPLEMENTOR
 from cape.core.workflow.types import StepResult
+
+# Required fields for address review output JSON
+ADDRESS_REVIEW_REQUIRED_FIELDS = {
+    "issues": list,
+    "output": str,
+    "summary": str,
+}
 
 
 def address_review_issues(
@@ -54,8 +62,8 @@ def address_review_issues(
             request.model_dump_json(indent=2, by_alias=True),
         )
 
-        # GenerateReviewStep may return plain text output, not JSON
-        response = execute_template(request, stream_handler=stream_handler, require_json=False)
+        # Execute template - now requiring JSON with proper validation
+        response = execute_template(request, stream_handler=stream_handler, require_json=True)
 
         logger.debug(
             "address_review_issues response: success=%s",
@@ -68,11 +76,18 @@ def address_review_issues(
                 f"Failed to execute /adw-implement-review template: {response.output}"
             )
 
-        # Insert progress comment with template output
+        # Parse and validate JSON output
+        parse_result = parse_and_validate_json(
+            response.output, ADDRESS_REVIEW_REQUIRED_FIELDS, logger, step_name="address_review"
+        )
+        if not parse_result.success:
+            return StepResult.fail(parse_result.error)
+
+        # Insert progress comment with parsed template output
         comment = CapeComment(
             issue_id=issue_id,
             comment="Review issues template executed successfully",
-            raw={"template_output": response.output[:1000]},  # First 1000 chars of output
+            raw={"template_output": parse_result.data},
             source="system",
             type="artifact",
         )
@@ -82,7 +97,7 @@ def address_review_issues(
         else:
             logger.debug(f"Template notification comment inserted: {msg}")
 
-        return StepResult.ok(None)
+        return StepResult.ok(None, parsed_data=parse_result.data)
 
     except Exception as e:
         logger.error(f"Failed to address review issues: {e}")

@@ -3,10 +3,17 @@
 from cape.core.agent import execute_template
 from cape.core.agents.claude import ClaudeAgentTemplateRequest
 from cape.core.notifications import make_progress_comment_handler
+from cape.core.workflow.json_parser import parse_and_validate_json
 from cape.core.workflow.shared import AGENT_IMPLEMENTOR
 from cape.core.workflow.step_base import WorkflowContext, WorkflowStep
 from cape.core.workflow.types import StepResult
 from cape.core.workflow.workflow_io import emit_progress_comment
+
+# Required fields for code quality output JSON
+CODE_QUALITY_REQUIRED_FIELDS = {
+    "output": str,
+    "tools": list,
+}
 
 
 class CodeQualityStep(WorkflowStep):
@@ -59,6 +66,13 @@ class CodeQualityStep(WorkflowStep):
                 logger.warning(f"Code quality checks failed: {response.output}")
                 return StepResult.fail(f"Code quality checks failed: {response.output}")
 
+            # Parse and validate JSON output
+            parse_result = parse_and_validate_json(
+                response.output, CODE_QUALITY_REQUIRED_FIELDS, logger, step_name="code_quality"
+            )
+            if not parse_result.success:
+                return StepResult.fail(parse_result.error)
+
             logger.info("Code quality checks completed successfully")
 
             # Insert progress comment - best-effort, non-blocking
@@ -66,10 +80,10 @@ class CodeQualityStep(WorkflowStep):
                 context.issue_id,
                 "Code quality checks completed.",
                 logger,
-                raw={"text": "Code quality checks completed."},
+                raw={"text": "Code quality checks completed.", "result": parse_result.data},
             )
 
-            return StepResult.ok(None)
+            return StepResult.ok(None, parsed_data=parse_result.data)
 
         except Exception as e:
             logger.warning(f"Code quality step failed: {e}")

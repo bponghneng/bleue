@@ -6,8 +6,17 @@ from typing import Callable, Optional
 from cape.core.agent import execute_template
 from cape.core.agents.claude import ClaudeAgentTemplateRequest
 from cape.core.models import CapeIssue
+from cape.core.workflow.json_parser import parse_and_validate_json
 from cape.core.workflow.shared import AGENT_PLANNER
 from cape.core.workflow.types import ClassifySlashCommand, PlanData, StepResult
+
+# Required fields for plan output JSON
+# Plan output must have output, planPath, summary
+PLAN_REQUIRED_FIELDS = {
+    "output": str,
+    "planPath": str,
+    "summary": str,
+}
 
 
 def build_plan(
@@ -50,4 +59,14 @@ def build_plan(
     if not response.success:
         return StepResult.fail(response.output)
 
-    return StepResult.ok(PlanData(output=response.output, session_id=response.session_id))
+    # Parse and validate JSON output
+    parse_result = parse_and_validate_json(
+        response.output, PLAN_REQUIRED_FIELDS, logger, step_name="build_plan"
+    )
+    if not parse_result.success:
+        return StepResult.fail(parse_result.error)
+
+    return StepResult.ok(
+        PlanData(output=response.output, session_id=response.session_id),
+        parsed_data=parse_result.data,
+    )
