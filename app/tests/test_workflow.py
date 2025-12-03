@@ -141,13 +141,18 @@ def test_classify_issue_invalid_json(mock_execute, mock_logger, sample_issue):
 @patch("cape.core.workflow.plan.execute_template")
 def test_build_plan_success(mock_execute, mock_logger, sample_issue):
     """Test successful plan building."""
+    plan_json = (
+        '{"output": "build_plan", "planPath": "specs/feature-plan.md", '
+        '"summary": "Plan created successfully"}'
+    )
     mock_execute.return_value = ClaudeAgentPromptResponse(
-        output="Plan created successfully", success=True, session_id="test123"
+        output=plan_json, success=True, session_id="test123"
     )
 
     result = build_plan(sample_issue, "/adw-feature-plan", "adw123", mock_logger)
     assert result.success
-    assert result.data.output == "Plan created successfully"
+    assert result.data.output == plan_json
+    assert result.metadata.get("parsed_data", {}).get("summary") == "Plan created successfully"
 
 
 @patch("cape.core.workflow.plan_file.execute_template")
@@ -179,15 +184,21 @@ def test_get_plan_file_not_found(mock_execute, mock_logger):
 @patch("cape.core.workflow.implement.execute_implement_plan")
 def test_implement_plan_success(mock_execute, mock_logger):
     """Test successful plan implementation."""
+    implement_json = (
+        '{"files_modified": ["src/main.py"], "git_diff_stat": "1 file changed", '
+        '"output": "implement", "planPath": "specs/plan.md", '
+        '"status": "completed", "summary": "Implementation complete"}'
+    )
     mock_execute.return_value = Mock(
-        output="Implementation complete",
+        output=implement_json,
         success=True,
         session_id="test123",
     )
 
     result = implement_plan("specs/plan.md", 1, "adw123", mock_logger)
     assert result.success
-    assert result.data.output == "Implementation complete"
+    assert result.data.output == implement_json
+    assert result.metadata.get("parsed_data", {}).get("status") == "completed"
 
 
 @patch("cape.core.workflow.runner.get_default_pipeline")
@@ -379,10 +390,13 @@ def test_address_review_issues_success(
     mock_request = Mock()
     mock_request_class.return_value = mock_request
 
-    # Mock successful template execution
+    # Mock successful template execution with valid JSON
+    address_review_json = (
+        '{"issues": [], "output": "address_review", "summary": "All issues addressed"}'
+    )
     mock_response = Mock()
     mock_response.success = True
-    mock_response.output = "Template executed successfully"
+    mock_response.output = address_review_json
     mock_execute.return_value = mock_response
 
     # Mock insert_progress_comment success
@@ -394,7 +408,7 @@ def test_address_review_issues_success(
 
     assert result.success
     mock_exists.assert_called_once_with("specs/chore-test-review.txt")
-    mock_execute.assert_called_once_with(mock_request, stream_handler=None, require_json=False)
+    mock_execute.assert_called_once_with(mock_request, stream_handler=None, require_json=True)
     mock_insert_comment.assert_called_once()
 
 
@@ -650,38 +664,25 @@ def test_create_pr_step_name():
 
 
 def test_prepare_pr_step_store_pr_details_success(mock_logger):
-    """Test _store_pr_details parses and stores JSON correctly."""
+    """Test _store_pr_details stores validated dict correctly."""
     from cape.core.workflow.step_base import WorkflowContext
     from cape.core.workflow.steps.pr import PreparePullRequestStep
 
     context = WorkflowContext(issue_id=1, adw_id="adw123", logger=mock_logger)
     step = PreparePullRequestStep()
 
-    output = (
-        '{"title": "feat: add feature", "summary": "This adds a feature.", '
-        '"commits": ["abc123", "def456"]}'
-    )
-    step._store_pr_details(output, context, mock_logger)
+    # Now _store_pr_details expects a dict (pre-validated), not a JSON string
+    pr_data = {
+        "title": "feat: add feature",
+        "summary": "This adds a feature.",
+        "commits": ["abc123", "def456"],
+    }
+    step._store_pr_details(pr_data, context, mock_logger)
 
     assert "pr_details" in context.data
     assert context.data["pr_details"]["title"] == "feat: add feature"
     assert context.data["pr_details"]["summary"] == "This adds a feature."
     assert context.data["pr_details"]["commits"] == ["abc123", "def456"]
-
-
-def test_prepare_pr_step_store_pr_details_malformed_json(mock_logger):
-    """Test _store_pr_details handles malformed JSON gracefully."""
-    from cape.core.workflow.step_base import WorkflowContext
-    from cape.core.workflow.steps.pr import PreparePullRequestStep
-
-    context = WorkflowContext(issue_id=1, adw_id="adw123", logger=mock_logger)
-    step = PreparePullRequestStep()
-
-    output = "not valid json"
-    step._store_pr_details(output, context, mock_logger)
-
-    assert "pr_details" not in context.data
-    mock_logger.warning.assert_called()
 
 
 def test_prepare_pr_step_store_pr_details_missing_fields(mock_logger):
@@ -692,8 +693,11 @@ def test_prepare_pr_step_store_pr_details_missing_fields(mock_logger):
     context = WorkflowContext(issue_id=1, adw_id="adw123", logger=mock_logger)
     step = PreparePullRequestStep()
 
-    output = '{"title": "only title"}'
-    step._store_pr_details(output, context, mock_logger)
+    # Dict with only title - note this would normally fail JSON validation
+    # but _store_pr_details is now called after validation, so this tests
+    # that defaults are still applied for extra safety
+    pr_data = {"title": "only title"}
+    step._store_pr_details(pr_data, context, mock_logger)
 
     assert "pr_details" in context.data
     assert context.data["pr_details"]["title"] == "only title"
