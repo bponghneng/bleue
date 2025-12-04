@@ -5,8 +5,8 @@ from typing import Callable, Optional
 
 from cape.core.agent import execute_template
 from cape.core.agents.claude import ClaudeAgentTemplateRequest
-from cape.core.models import CapeIssue
 from cape.core.json_parser import parse_and_validate_json
+from cape.core.models import CapeIssue
 from cape.core.workflow.shared import AGENT_PLANNER
 from cape.core.workflow.types import ClassifySlashCommand, PlanData, StepResult
 

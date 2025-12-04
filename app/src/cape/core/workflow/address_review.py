@@ -6,9 +6,9 @@ from typing import Callable, Optional
 
 from cape.core.agent import execute_template
 from cape.core.agents.claude import ClaudeAgentTemplateRequest
+from cape.core.json_parser import parse_and_validate_json
 from cape.core.models import CapeComment
 from cape.core.notifications import insert_progress_comment
-from cape.core.json_parser import parse_and_validate_json
 from cape.core.workflow.shared import AGENT_IMPLEMENTOR
 from cape.core.workflow.types import StepResult
 
