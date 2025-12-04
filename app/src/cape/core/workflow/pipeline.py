@@ -78,8 +78,8 @@ def get_default_pipeline() -> List[WorkflowStep]:
     from cape.core.workflow.steps.classify import ClassifyStep
     from cape.core.workflow.steps.create_pr import CreatePullRequestStep
     from cape.core.workflow.steps.fetch import FetchIssueStep
-    from cape.core.workflow.steps.implement import FindImplementedPlanStep, ImplementStep
     from cape.core.workflow.steps.find_plan_file import FindPlanFileStep
+    from cape.core.workflow.steps.implement import FindImplementedPlanStep, ImplementStep
     from cape.core.workflow.steps.plan import BuildPlanStep
     from cape.core.workflow.steps.pr import PreparePullRequestStep
     from cape.core.workflow.steps.quality import CodeQualityStep
