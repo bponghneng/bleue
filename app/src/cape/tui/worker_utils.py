@@ -3,7 +3,7 @@
 from typing import Optional
 
 # Worker options: (display_name, worker_id)
-# Grouped by fleet: Alleycat, Nebuchadnezzar, Tydirium
+# Grouped by fleet: Alleycat, HailMary, Nebuchadnezzar, Tydirium
 WORKER_OPTIONS: list[tuple[str, str | None]] = [
     ("Unassigned", None),
     ("Alleycat 1 (alleycat-1)", "alleycat-1"),
@@ -30,19 +30,14 @@ for display_name, worker_id in WORKER_OPTIONS:
         name_part = display_name.split(" (")[0]
         _WORKER_DISPLAY_NAMES[worker_id] = name_part
 
-# Add nebuchadnezzar-* aliases for hailmary-* IDs (database accepts both)
-_WORKER_DISPLAY_NAMES["nebuchadnezzar-1"] = "Nebuchadnezzar 1"
-_WORKER_DISPLAY_NAMES["nebuchadnezzar-2"] = "Nebuchadnezzar 2"
-_WORKER_DISPLAY_NAMES["nebuchadnezzar-3"] = "Nebuchadnezzar 3"
-
 
 def get_worker_display_name(worker_id: Optional[str]) -> str:
     """Get the display name for a worker ID.
 
     Args:
-        worker_id: The worker ID (e.g., "alleycat-1", "hailmary-2") or None for unassigned.
+        worker_id: The worker ID (e.g., "alleycat-1", "hailmary-2", "nebuchadnezzar-3") or None for unassigned.
 
     Returns:
-        The display name (e.g., "Alleycat 1", "Nebuchadnezzar 2") or empty string for unassigned.
+        The display name (e.g., "Alleycat 1", "HailMary 2", "Nebuchadnezzar 3") or empty string for unassigned.
     """
     return _WORKER_DISPLAY_NAMES.get(worker_id, "")

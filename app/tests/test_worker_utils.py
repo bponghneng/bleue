@@ -33,10 +33,15 @@ class TestWorkerOptions:
         assert "alleycat-2" in worker_ids
         assert "alleycat-3" in worker_ids
         
-        # Check for hailmary workers (Nebuchadnezzar display names)
+        # Check for HailMary workers
         assert "hailmary-1" in worker_ids
         assert "hailmary-2" in worker_ids
         assert "hailmary-3" in worker_ids
+        
+        # Check for Nebuchadnezzar workers
+        assert "nebuchadnezzar-1" in worker_ids
+        assert "nebuchadnezzar-2" in worker_ids
+        assert "nebuchadnezzar-3" in worker_ids
         
         # Check for Tydirium workers
         assert "tydirium-1" in worker_ids
@@ -54,10 +59,10 @@ class TestGetWorkerDisplayName:
         assert get_worker_display_name("alleycat-3") == "Alleycat 3"
 
     def test_hailmary_workers(self):
-        """Test correct mapping for hailmary workers (Nebuchadnezzar display)."""
-        assert get_worker_display_name("hailmary-1") == "Nebuchadnezzar 1"
-        assert get_worker_display_name("hailmary-2") == "Nebuchadnezzar 2"
-        assert get_worker_display_name("hailmary-3") == "Nebuchadnezzar 3"
+        """Test correct mapping for HailMary workers."""
+        assert get_worker_display_name("hailmary-1") == "HailMary 1"
+        assert get_worker_display_name("hailmary-2") == "HailMary 2"
+        assert get_worker_display_name("hailmary-3") == "HailMary 3"
 
     def test_nebuchadnezzar_workers(self):
         """Test correct mapping for nebuchadnezzar workers."""
