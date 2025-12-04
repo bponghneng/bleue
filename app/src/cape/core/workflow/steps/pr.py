@@ -62,6 +62,15 @@ class PreparePullRequestStep(WorkflowStep):
             response = execute_template(request, stream_handler=pr_handler)
 
             logger.debug("pull_request response: success=%s", response.success)
+            logger.debug("PR preparation LLM response: %s", response.output)
+
+            # Emit raw LLM response for debugging visibility
+            emit_progress_comment(
+                context.issue_id,
+                "PR preparation LLM response received",
+                logger,
+                raw={"output": "pr-preparation-response", "llm_response": response.output},
+            )
 
             if not response.success:
                 logger.warning(f"Pull request preparation failed: {response.output}")
@@ -74,15 +83,17 @@ class PreparePullRequestStep(WorkflowStep):
                 response.output, PR_REQUIRED_FIELDS, logger, step_name="pull_request"
             )
             if not parse_result.success:
-                logger.warning(f"Pull request JSON parsing failed: {parse_result.error}")
+                error_msg = parse_result.error or "JSON parsing failed"
+                logger.warning(f"Pull request JSON parsing failed: {error_msg}")
                 # Still mark workflow as completed even if parse fails
                 self._finalize_workflow(context)
-                return StepResult.fail(parse_result.error)
+                return StepResult.fail(error_msg)
 
             logger.info("Pull request prepared successfully")
 
             # Store PR details for CreatePullRequestStep using validated data
-            self._store_pr_details(parse_result.data, context, logger)
+            if parse_result.data is not None:
+                self._store_pr_details(parse_result.data, context, logger)
 
             # Insert progress comment - best-effort, non-blocking
             emit_progress_comment(
