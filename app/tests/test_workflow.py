@@ -455,13 +455,17 @@ def test_address_review_issues_execution_failure(
 # === CreatePullRequestStep Tests ===
 
 
+@patch("cape.core.workflow.steps.create_pr.get_repo_path")
 @patch("cape.core.workflow.steps.create_pr.subprocess.run")
 @patch("cape.core.workflow.steps.create_pr.emit_progress_comment")
 @patch.dict("os.environ", {"GITHUB_PAT": "test-token"})
-def test_create_pr_step_success(mock_emit, mock_subprocess, mock_logger):
+def test_create_pr_step_success(mock_emit, mock_subprocess, mock_get_repo_path, mock_logger):
     """Test successful PR creation."""
     from cape.core.workflow.step_base import WorkflowContext
     from cape.core.workflow.steps.create_pr import CreatePullRequestStep
+
+    # Mock get_repo_path to return a specific path
+    mock_get_repo_path.return_value = "/path/to/repo"
 
     # Mock subprocess success
     mock_result = Mock()
@@ -485,6 +489,10 @@ def test_create_pr_step_success(mock_emit, mock_subprocess, mock_logger):
     assert result.success is True
     mock_subprocess.assert_called_once()
     mock_emit.assert_called_once()
+
+    # Verify subprocess.run was called with correct cwd parameter
+    subprocess_call_kwargs = mock_subprocess.call_args[1]
+    assert subprocess_call_kwargs["cwd"] == "/path/to/repo"
 
     # Verify the emit call has correct data
     call_args = mock_emit.call_args
@@ -746,5 +754,7 @@ def test_prepare_pr_step_emits_raw_llm_response(
             llm_response_call = call
             break
 
-    assert llm_response_call is not None, "Expected emit_progress_comment call with pr-preparation-response"
+    assert llm_response_call is not None, (
+        "Expected emit_progress_comment call with pr-preparation-response"
+    )
     assert llm_response_call[1]["raw"]["llm_response"] == pr_json

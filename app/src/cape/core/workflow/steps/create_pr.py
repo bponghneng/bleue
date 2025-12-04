@@ -3,6 +3,7 @@
 import os
 import subprocess
 
+from cape.core.workflow.shared import get_repo_path
 from cape.core.workflow.step_base import WorkflowContext, WorkflowStep
 from cape.core.workflow.types import StepResult
 from cape.core.workflow.workflow_io import emit_progress_comment
@@ -88,7 +89,8 @@ class CreatePullRequestStep(WorkflowStep):
             env = os.environ.copy()
             env["GH_TOKEN"] = github_pat
 
-            logger.debug("Executing: %s", " ".join(cmd))
+            repo_path = get_repo_path()
+            logger.debug("Executing: %s (cwd=%s)", " ".join(cmd), repo_path)
 
             result = subprocess.run(
                 cmd,
@@ -96,6 +98,7 @@ class CreatePullRequestStep(WorkflowStep):
                 text=True,
                 env=env,
                 timeout=120,
+                cwd=repo_path,
             )
 
             if result.returncode != 0:
