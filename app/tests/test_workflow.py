@@ -476,18 +476,24 @@ def test_address_review_issues_execution_failure(
 @patch("cape.core.workflow.steps.create_pr.emit_progress_comment")
 @patch.dict("os.environ", {"GITHUB_PAT": "test-token"})
 def test_create_pr_step_success(mock_emit, mock_subprocess, mock_get_repo_path, mock_logger):
-    """Test successful PR creation."""
+    """Test successful PR creation with git push before gh pr create."""
     from cape.core.workflow.step_base import WorkflowContext
     from cape.core.workflow.steps.create_pr import CreatePullRequestStep
 
     # Mock get_repo_path to return a specific path
     mock_get_repo_path.return_value = "/path/to/repo"
 
-    # Mock subprocess success
-    mock_result = Mock()
-    mock_result.returncode = 0
-    mock_result.stdout = "https://github.com/owner/repo/pull/123\n"
-    mock_subprocess.return_value = mock_result
+    # Mock subprocess success for both git push and gh pr create
+    mock_push_result = Mock()
+    mock_push_result.returncode = 0
+    mock_push_result.stdout = ""
+    mock_push_result.stderr = ""
+
+    mock_pr_result = Mock()
+    mock_pr_result.returncode = 0
+    mock_pr_result.stdout = "https://github.com/owner/repo/pull/123\n"
+
+    mock_subprocess.side_effect = [mock_push_result, mock_pr_result]
 
     # Mock emit_progress_comment success
     mock_emit.return_value = ("success", "Comment inserted")
@@ -503,12 +509,18 @@ def test_create_pr_step_success(mock_emit, mock_subprocess, mock_get_repo_path, 
     result = step.run(context)
 
     assert result.success is True
-    mock_subprocess.assert_called_once()
+    assert mock_subprocess.call_count == 2
     mock_emit.assert_called_once()
 
-    # Verify subprocess.run was called with correct cwd parameter
-    subprocess_call_kwargs = mock_subprocess.call_args[1]
-    assert subprocess_call_kwargs["cwd"] == "/path/to/repo"
+    # Verify git push was called first
+    push_call = mock_subprocess.call_args_list[0]
+    assert push_call[0][0] == ["git", "push", "--set-upstream", "origin", "HEAD"]
+    assert push_call[1]["cwd"] == "/path/to/repo"
+
+    # Verify gh pr create was called second
+    pr_call = mock_subprocess.call_args_list[1]
+    assert pr_call[0][0][0:3] == ["gh", "pr", "create"]
+    assert pr_call[1]["cwd"] == "/path/to/repo"
 
     # Verify the emit call has correct data
     call_args = mock_emit.call_args
@@ -584,19 +596,30 @@ def test_create_pr_step_empty_title(mock_emit, mock_logger):
     assert mock_emit.call_args[1]["raw"]["output"] == "pull-request-skipped"
 
 
+@patch("cape.core.workflow.steps.create_pr.get_repo_path")
 @patch("cape.core.workflow.steps.create_pr.emit_progress_comment")
 @patch("cape.core.workflow.steps.create_pr.subprocess.run")
 @patch.dict("os.environ", {"GITHUB_PAT": "test-token"})
-def test_create_pr_step_gh_command_failure(mock_subprocess, mock_emit, mock_logger):
+def test_create_pr_step_gh_command_failure(
+    mock_subprocess, mock_emit, mock_get_repo_path, mock_logger
+):
     """Test PR creation handles gh command failure."""
     from cape.core.workflow.step_base import WorkflowContext
     from cape.core.workflow.steps.create_pr import CreatePullRequestStep
 
-    # Mock subprocess failure
-    mock_result = Mock()
-    mock_result.returncode = 1
-    mock_result.stderr = "error: could not create pull request"
-    mock_subprocess.return_value = mock_result
+    mock_get_repo_path.return_value = "/path/to/repo"
+
+    # Mock git push success, gh pr create failure
+    mock_push_result = Mock()
+    mock_push_result.returncode = 0
+    mock_push_result.stdout = ""
+    mock_push_result.stderr = ""
+
+    mock_pr_result = Mock()
+    mock_pr_result.returncode = 1
+    mock_pr_result.stderr = "error: could not create pull request"
+
+    mock_subprocess.side_effect = [mock_push_result, mock_pr_result]
 
     context = WorkflowContext(issue_id=1, adw_id="adw123", logger=mock_logger)
     context.data["pr_details"] = {
@@ -614,17 +637,29 @@ def test_create_pr_step_gh_command_failure(mock_subprocess, mock_emit, mock_logg
     assert mock_emit.call_args[1]["raw"]["output"] == "pull-request-failed"
 
 
+@patch("cape.core.workflow.steps.create_pr.get_repo_path")
 @patch("cape.core.workflow.steps.create_pr.emit_progress_comment")
 @patch("cape.core.workflow.steps.create_pr.subprocess.run")
 @patch.dict("os.environ", {"GITHUB_PAT": "test-token"})
-def test_create_pr_step_timeout(mock_subprocess, mock_emit, mock_logger):
-    """Test PR creation handles timeout."""
+def test_create_pr_step_timeout(mock_subprocess, mock_emit, mock_get_repo_path, mock_logger):
+    """Test PR creation handles timeout on gh pr create."""
     import subprocess
 
     from cape.core.workflow.step_base import WorkflowContext
     from cape.core.workflow.steps.create_pr import CreatePullRequestStep
 
-    mock_subprocess.side_effect = subprocess.TimeoutExpired(cmd="gh", timeout=120)
+    mock_get_repo_path.return_value = "/path/to/repo"
+
+    # Mock git push success, gh pr create timeout
+    mock_push_result = Mock()
+    mock_push_result.returncode = 0
+    mock_push_result.stdout = ""
+    mock_push_result.stderr = ""
+
+    mock_subprocess.side_effect = [
+        mock_push_result,
+        subprocess.TimeoutExpired(cmd="gh", timeout=120),
+    ]
 
     context = WorkflowContext(issue_id=1, adw_id="adw123", logger=mock_logger)
     context.data["pr_details"] = {
@@ -642,15 +677,26 @@ def test_create_pr_step_timeout(mock_subprocess, mock_emit, mock_logger):
     assert mock_emit.call_args[1]["raw"]["output"] == "pull-request-failed"
 
 
+@patch("cape.core.workflow.steps.create_pr.get_repo_path")
 @patch("cape.core.workflow.steps.create_pr.emit_progress_comment")
 @patch("cape.core.workflow.steps.create_pr.subprocess.run")
 @patch.dict("os.environ", {"GITHUB_PAT": "test-token"})
-def test_create_pr_step_gh_not_found(mock_subprocess, mock_emit, mock_logger):
+def test_create_pr_step_gh_not_found(
+    mock_subprocess, mock_emit, mock_get_repo_path, mock_logger
+):
     """Test PR creation handles gh CLI not found."""
     from cape.core.workflow.step_base import WorkflowContext
     from cape.core.workflow.steps.create_pr import CreatePullRequestStep
 
-    mock_subprocess.side_effect = FileNotFoundError("gh not found")
+    mock_get_repo_path.return_value = "/path/to/repo"
+
+    # Mock git push success, gh not found
+    mock_push_result = Mock()
+    mock_push_result.returncode = 0
+    mock_push_result.stdout = ""
+    mock_push_result.stderr = ""
+
+    mock_subprocess.side_effect = [mock_push_result, FileNotFoundError("gh not found")]
 
     context = WorkflowContext(issue_id=1, adw_id="adw123", logger=mock_logger)
     context.data["pr_details"] = {
@@ -666,6 +712,90 @@ def test_create_pr_step_gh_not_found(mock_subprocess, mock_emit, mock_logger):
     mock_logger.warning.assert_called_with("gh CLI not found, skipping PR creation")
     mock_emit.assert_called_once()
     assert mock_emit.call_args[1]["raw"]["output"] == "pull-request-failed"
+
+
+@patch("cape.core.workflow.steps.create_pr.get_repo_path")
+@patch("cape.core.workflow.steps.create_pr.emit_progress_comment")
+@patch("cape.core.workflow.steps.create_pr.subprocess.run")
+@patch.dict("os.environ", {"GITHUB_PAT": "test-token"})
+def test_create_pr_step_push_failure_continues_to_pr(
+    mock_subprocess, mock_emit, mock_get_repo_path, mock_logger
+):
+    """Test PR creation continues even when git push fails."""
+    from cape.core.workflow.step_base import WorkflowContext
+    from cape.core.workflow.steps.create_pr import CreatePullRequestStep
+
+    mock_get_repo_path.return_value = "/path/to/repo"
+
+    # Mock git push failure, gh pr create success
+    mock_push_result = Mock()
+    mock_push_result.returncode = 1
+    mock_push_result.stdout = ""
+    mock_push_result.stderr = "error: failed to push some refs"
+
+    mock_pr_result = Mock()
+    mock_pr_result.returncode = 0
+    mock_pr_result.stdout = "https://github.com/owner/repo/pull/123\n"
+
+    mock_subprocess.side_effect = [mock_push_result, mock_pr_result]
+
+    context = WorkflowContext(issue_id=1, adw_id="adw123", logger=mock_logger)
+    context.data["pr_details"] = {
+        "title": "feat: add new feature",
+        "summary": "This PR adds a new feature.",
+        "commits": [],
+    }
+
+    step = CreatePullRequestStep()
+    result = step.run(context)
+
+    # PR should succeed even if push failed (branch may already exist on remote)
+    assert result.success is True
+    assert mock_subprocess.call_count == 2
+    mock_emit.assert_called_once()
+    assert mock_emit.call_args[1]["raw"]["output"] == "pull-request-created"
+
+
+@patch("cape.core.workflow.steps.create_pr.get_repo_path")
+@patch("cape.core.workflow.steps.create_pr.emit_progress_comment")
+@patch("cape.core.workflow.steps.create_pr.subprocess.run")
+@patch.dict("os.environ", {"GITHUB_PAT": "test-token"})
+def test_create_pr_step_push_timeout_continues_to_pr(
+    mock_subprocess, mock_emit, mock_get_repo_path, mock_logger
+):
+    """Test PR creation continues even when git push times out."""
+    import subprocess
+
+    from cape.core.workflow.step_base import WorkflowContext
+    from cape.core.workflow.steps.create_pr import CreatePullRequestStep
+
+    mock_get_repo_path.return_value = "/path/to/repo"
+
+    # Mock git push timeout, gh pr create success
+    mock_pr_result = Mock()
+    mock_pr_result.returncode = 0
+    mock_pr_result.stdout = "https://github.com/owner/repo/pull/123\n"
+
+    mock_subprocess.side_effect = [
+        subprocess.TimeoutExpired(cmd="git", timeout=60),
+        mock_pr_result,
+    ]
+
+    context = WorkflowContext(issue_id=1, adw_id="adw123", logger=mock_logger)
+    context.data["pr_details"] = {
+        "title": "feat: add new feature",
+        "summary": "This PR adds a new feature.",
+        "commits": [],
+    }
+
+    step = CreatePullRequestStep()
+    result = step.run(context)
+
+    # PR should succeed even if push timed out
+    assert result.success is True
+    assert mock_subprocess.call_count == 2
+    mock_emit.assert_called_once()
+    assert mock_emit.call_args[1]["raw"]["output"] == "pull-request-created"
 
 
 def test_create_pr_step_is_not_critical():

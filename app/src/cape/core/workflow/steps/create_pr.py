@@ -74,6 +74,37 @@ class CreatePullRequestStep(WorkflowStep):
             return StepResult.ok(None)
 
         try:
+            # Execute with GH_TOKEN environment variable
+            env = os.environ.copy()
+            env["GH_TOKEN"] = github_pat
+
+            repo_path = get_repo_path()
+
+            # Push branch to origin before creating PR
+            push_cmd = ["git", "push", "--set-upstream", "origin", "HEAD"]
+            logger.debug("Pushing current branch to origin...")
+            try:
+                push_result = subprocess.run(
+                    push_cmd,
+                    capture_output=True,
+                    text=True,
+                    env=env,
+                    timeout=60,
+                    cwd=repo_path,
+                )
+                if push_result.returncode == 0:
+                    logger.debug("Branch pushed successfully")
+                else:
+                    logger.debug(
+                        "git push failed (exit code %d): %s",
+                        push_result.returncode,
+                        push_result.stderr,
+                    )
+            except subprocess.TimeoutExpired:
+                logger.debug("git push timed out, continuing to PR creation")
+            except Exception as e:
+                logger.debug("git push failed: %s", e)
+
             # Build gh pr create command
             cmd = [
                 "gh",
@@ -85,11 +116,6 @@ class CreatePullRequestStep(WorkflowStep):
                 summary,
             ]
 
-            # Execute with GH_TOKEN environment variable
-            env = os.environ.copy()
-            env["GH_TOKEN"] = github_pat
-
-            repo_path = get_repo_path()
             logger.debug("Executing: %s (cwd=%s)", " ".join(cmd), repo_path)
 
             result = subprocess.run(
