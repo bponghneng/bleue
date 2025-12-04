@@ -4,7 +4,7 @@ from logging import Logger
 
 from cape.core.agent import execute_implement_plan
 from cape.core.agents import AgentExecuteResponse
-from cape.core.workflow.json_parser import parse_and_validate_json
+from cape.core.json_parser import parse_and_validate_json
 from cape.core.workflow.shared import AGENT_IMPLEMENTOR
 from cape.core.workflow.types import ImplementData, StepResult
 

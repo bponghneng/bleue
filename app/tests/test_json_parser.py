@@ -5,7 +5,7 @@ from unittest.mock import Mock
 
 import pytest
 
-from cape.core.workflow.json_parser import _sanitize_json_output, parse_and_validate_json
+from cape.core.json_parser import _sanitize_json_output, parse_and_validate_json
 
 
 @pytest.fixture

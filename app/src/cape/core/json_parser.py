@@ -1,15 +1,49 @@
-"""Shared JSON parsing helper for workflow steps.
+"""Shared JSON parsing helper for agent outputs.
 
 This module provides consistent JSON extraction, parsing, and validation
-for agent outputs across all workflow steps.
+for agent outputs across all core components and workflow steps.
 """
 
 import json
 import re
 from logging import Logger
-from typing import Any, Dict, Mapping, Optional
+from typing import Any, Dict, Generic, Mapping, Optional, TypeVar
 
-from cape.core.workflow.types import StepResult
+from pydantic import BaseModel
+
+# Generic type parameter for StepResult data payload
+T = TypeVar("T")
+
+
+class StepResult(BaseModel, Generic[T]):
+    """Generic result type for parsing operations.
+
+    Provides consistent success/error handling with optional typed data.
+    This is defined here to avoid circular imports - it's API-compatible
+    with cape.core.workflow.types.StepResult.
+
+    Attributes:
+        success: Whether the operation completed successfully
+        data: Optional typed payload
+        error: Optional error message if operation failed
+        metadata: Additional context (kept for compatibility)
+    """
+
+    success: bool
+    data: Optional[T] = None
+    error: Optional[str] = None
+    metadata: Dict[str, Any] = {}
+
+    @classmethod
+    def ok(cls, data: T, **metadata: Any) -> "StepResult[T]":
+        """Create a successful result with data."""
+        return cls(success=True, data=data, error=None, metadata=metadata)
+
+    @classmethod
+    def fail(cls, error: str, **metadata: Any) -> "StepResult[T]":
+        """Create a failed result with error message."""
+        return cls(success=False, data=None, error=error, metadata=metadata)
+
 
 # Regex pattern to match Markdown code fences wrapping JSON
 # Matches: ```json\n...\n``` or ```\n...\n```

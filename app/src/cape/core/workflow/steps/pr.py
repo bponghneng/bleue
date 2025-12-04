@@ -3,7 +3,7 @@
 from cape.core.agent import execute_template
 from cape.core.agents.claude import ClaudeAgentTemplateRequest
 from cape.core.notifications import make_progress_comment_handler
-from cape.core.workflow.json_parser import parse_and_validate_json
+from cape.core.json_parser import parse_and_validate_json
 from cape.core.workflow.shared import AGENT_IMPLEMENTOR
 from cape.core.workflow.status import update_status
 from cape.core.workflow.step_base import WorkflowContext, WorkflowStep
