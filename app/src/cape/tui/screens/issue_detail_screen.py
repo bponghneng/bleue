@@ -20,6 +20,7 @@ from cape.core.models import CapeComment, CapeIssue
 from cape.tui.components.comments import Comments
 from cape.tui.screens.confirm_delete_modal import ConfirmDeleteModal
 from cape.tui.screens.edit_description_modal import EditDescriptionModal
+from cape.tui.screens.worker_assign_modal import get_worker_display_name
 
 logger = logging.getLogger(__name__)
 
@@ -162,12 +163,7 @@ class IssueDetailScreen(Screen):
         updated = issue.updated_at.strftime("%Y-%m-%d %H:%M") if issue.updated_at else "Unknown"
 
         # Format assignment
-        if issue.assigned_to == "tydirium-1":
-            assigned_display = "Tydirium"
-        elif issue.assigned_to == "alleycat-1":
-            assigned_display = "Alleycat"
-        else:
-            assigned_display = "None"
+        assigned_display = get_worker_display_name(issue.assigned_to) or "None"
 
         # Update metadata section
         metadata = f"""[bold]Issue #{issue.id}[/bold]
