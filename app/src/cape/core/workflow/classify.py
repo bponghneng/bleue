@@ -65,7 +65,6 @@ def classify_issue(
         return StepResult.fail(f"Invalid classification JSON: {parse_result.error}")
 
     # parse_result.data is guaranteed to be non-None after success check
-    assert parse_result.data is not None
     classification_data = parse_result.data
     issue_type = classification_data["type"]
     complexity_level = classification_data["level"]
