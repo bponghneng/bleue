@@ -33,7 +33,7 @@ class TestWorkerOptions:
         assert "alleycat-2" in worker_ids
         assert "alleycat-3" in worker_ids
         
-        # Check for Nebuchadnezzar workers (hailmary IDs)
+        # Check for hailmary workers (Nebuchadnezzar display names)
         assert "hailmary-1" in worker_ids
         assert "hailmary-2" in worker_ids
         assert "hailmary-3" in worker_ids
