@@ -26,6 +26,10 @@ from cape.core.json_parser import parse_and_validate_json
 from cape.core.models import CapeComment
 from cape.core.notifications import insert_progress_comment, make_progress_comment_handler
 
+# Required fields for agent output JSON
+# Agent output must have output
+AGENT_REQUIRED_FIELDS = {"output": str}
+
 _DEFAULT_LOGGER = logging.getLogger(__name__)
 
 
@@ -120,7 +124,7 @@ def execute_template(
         if require_json:
             # Use shared parser to sanitize and validate JSON
             result = parse_and_validate_json(
-                raw_output, {}, logger, step_name=request.slash_command
+                raw_output, AGENT_REQUIRED_FIELDS, logger, step_name=request.slash_command
             )
             if result.success:
                 # Emit progress comment with parsed JSON in raw field
