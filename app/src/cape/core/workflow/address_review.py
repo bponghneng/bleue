@@ -11,6 +11,7 @@ from cape.core.models import CapeComment
 from cape.core.notifications import insert_progress_comment
 from cape.core.workflow.shared import AGENT_IMPLEMENTOR
 from cape.core.workflow.types import StepResult
+from cape.core.workflow.workflow_io import emit_progress_comment
 
 # Required fields for address review output JSON
 ADDRESS_REVIEW_REQUIRED_FIELDS = {
@@ -68,6 +69,14 @@ def address_review_issues(
         logger.debug(
             "address_review_issues response: success=%s",
             response.success,
+        )
+
+        # Emit raw LLM response for debugging visibility
+        emit_progress_comment(
+            issue_id,
+            "Address review LLM response received",
+            logger,
+            raw={"output": "address-review-response", "llm_response": response.output},
         )
 
         if not response.success:
