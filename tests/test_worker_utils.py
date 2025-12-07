@@ -1,6 +1,6 @@
 """Tests for TUI worker utilities."""
 
-from cape.tui.worker_utils import WORKER_OPTIONS, get_worker_display_name
+from bleue.tui.worker_utils import WORKER_OPTIONS, get_worker_display_name
 
 
 class TestWorkerOptions:
