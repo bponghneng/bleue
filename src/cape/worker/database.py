@@ -82,7 +82,7 @@ def update_issue_status(
     try:
         client = get_client()
 
-        client.table("cape_issues").update({"status": status}).eq("id", issue_id).execute()
+        client.table("issues").update({"status": status}).eq("id", issue_id).execute()
 
         if logger:
             logger.debug(f"Updated issue {issue_id} status to {status}")

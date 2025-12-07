@@ -2,7 +2,7 @@
 """
 CAPE Issue Worker Daemon
 
-A standalone daemon that continuously polls the cape_issues database table for pending
+A standalone daemon that continuously polls the issues database table for pending
 issues and executes the appropriate workflows using the cape-adw command. The worker
 operates independently of the CLI, providing automated background processing of issues
 with proper locking mechanisms to prevent race conditions between multiple worker instances.

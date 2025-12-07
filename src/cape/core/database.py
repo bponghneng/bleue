@@ -102,9 +102,7 @@ def fetch_issue(issue_id: int) -> CapeIssue:
     client = get_client()
 
     try:
-        response = (
-            client.table("cape_issues").select("*").eq("id", issue_id).maybe_single().execute()
-        )
+        response = client.table("issues").select("*").eq("id", issue_id).maybe_single().execute()
 
         if response is None:
             raise ValueError(f"Empty response when fetching issue {issue_id}")
@@ -132,7 +130,7 @@ def fetch_all_issues() -> List[CapeIssue]:
     client = get_client()
 
     try:
-        response = client.table("cape_issues").select("*").order("created_at", desc=True).execute()
+        response = client.table("issues").select("*").order("created_at", desc=True).execute()
 
         rows = cast(Optional[SupabaseRows], response.data)
         if not rows:
@@ -163,7 +161,7 @@ def create_comment(comment: CapeComment) -> CapeComment:
     }
 
     try:
-        response = client.table("cape_comments").insert(comment_data).execute()
+        response = client.table("comments").insert(comment_data).execute()
 
         rows = cast(Optional[SupabaseRows], response.data)
         if not rows:
@@ -193,7 +191,7 @@ def fetch_comments(issue_id: int) -> List[CapeComment]:
 
     try:
         response = (
-            client.table("cape_comments")
+            client.table("comments")
             .select("*")
             .eq("issue_id", issue_id)
             .order("created_at", desc=True)
@@ -249,7 +247,7 @@ def create_issue(description: str, title: Optional[str] = None) -> CapeIssue:
         issue_data["title"] = title_clean
 
     try:
-        response = client.table("cape_issues").insert(issue_data).execute()
+        response = client.table("issues").insert(issue_data).execute()
 
         rows = cast(Optional[SupabaseRows], response.data)
         if not rows:
@@ -287,7 +285,7 @@ def update_issue_status(issue_id: int, status: str) -> CapeIssue:
     }
 
     try:
-        response = client.table("cape_issues").update(update_data).eq("id", issue_id).execute()
+        response = client.table("issues").update(update_data).eq("id", issue_id).execute()
 
         rows = cast(Optional[SupabaseRows], response.data)
         if not rows:
@@ -333,7 +331,7 @@ def update_issue_description(issue_id: int, description: str) -> CapeIssue:
     }
 
     try:
-        response = client.table("cape_issues").update(update_data).eq("id", issue_id).execute()
+        response = client.table("issues").update(update_data).eq("id", issue_id).execute()
 
         rows = cast(Optional[SupabaseRows], response.data)
         if not rows:
@@ -365,7 +363,7 @@ def delete_issue(issue_id: int) -> bool:
     client = get_client()
 
     try:
-        response = client.table("cape_issues").delete().eq("id", issue_id).execute()
+        response = client.table("issues").delete().eq("id", issue_id).execute()
 
         if not response.data:
             raise ValueError(f"Issue with id {issue_id} not found")
@@ -437,7 +435,7 @@ def update_issue_assignment(issue_id: int, assigned_to: Optional[str]) -> CapeIs
     }
 
     try:
-        response = client.table("cape_issues").update(update_data).eq("id", issue_id).execute()
+        response = client.table("issues").update(update_data).eq("id", issue_id).execute()
 
         rows = cast(Optional[SupabaseRows], response.data)
         if not rows:
