@@ -6,8 +6,8 @@ from textual.containers import Container
 from textual.screen import ModalScreen
 from textual.widgets import Static
 
-from cape.core.database import update_issue_description
-from cape.tui.components.issue_form import IssueForm
+from bleue.core.database import update_issue_description
+from bleue.tui.components.issue_form import IssueForm
 
 
 class EditDescriptionModal(ModalScreen[bool]):

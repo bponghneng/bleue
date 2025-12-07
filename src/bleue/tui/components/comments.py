@@ -6,8 +6,8 @@ from textual.app import ComposeResult
 from textual.containers import Container
 from textual.widgets import Static
 
-from cape.core.models import CapeComment
-from cape.tui.components.comment_item import create_comment_widget
+from bleue.core.models import CapeComment
+from bleue.tui.components.comment_item import create_comment_widget
 
 
 class Comments(Container):

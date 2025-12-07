@@ -1,4 +1,4 @@
-"""Worker utilities for Cape TUI."""
+"""Worker utilities for Bleue TUI."""
 
 from typing import Optional
 

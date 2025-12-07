@@ -1,11 +1,11 @@
-"""Cape CLI - TUI-first workflow management CLI."""
+"""Bleue CLI - TUI-first workflow management CLI."""
 
 from typing import Optional
 
 import typer
 from dotenv import load_dotenv
 
-from cape import __version__
+from bleue import __version__
 
 # Load environment variables
 load_dotenv()
@@ -13,14 +13,14 @@ load_dotenv()
 app = typer.Typer(
     invoke_without_command=True,
     no_args_is_help=False,
-    help="Cape CLI - TUI-first workflow management",
+    help="Bleue CLI - TUI-first workflow management",
 )
 
 
 def version_callback(value: bool):
     """Print version and exit."""
     if value:
-        typer.echo(f"Cape CLI version {__version__}")
+        typer.echo(f"Bleue CLI version {__version__}")
         raise typer.Exit()
 
 
@@ -40,13 +40,13 @@ def main(
     if ctx.invoked_subcommand is None:
         # Import TUI here to avoid import errors if textual isn't installed
         try:
-            from cape.tui.app import CapeApp
+            from bleue.tui.app import BleuApp
 
-            tui_app = CapeApp()
+            tui_app = BleuApp()
             tui_app.run()
         except ImportError as e:
             typer.echo(f"Error: TUI dependencies not available: {e}", err=True)
-            typer.echo("Please install with: uv pip install cape-cli", err=True)
+            typer.echo("Please install with: uv pip install bleue", err=True)
             raise typer.Exit(1)
         except Exception as e:
             typer.echo(f"Error launching TUI: {e}", err=True)
