@@ -1,6 +1,5 @@
 from textual.app import App
 
-from bleue.core.utils import make_adw_id, setup_logger
 from bleue.tui.screens.help_modal import HelpModal
 from bleue.tui.screens.issue_list_screen import IssueListScreen
 
@@ -47,11 +46,6 @@ class BleuApp(App):
 
     def on_mount(self) -> None:
         """Initialize application on mount."""
-        # Initialize logger
-        adw_id = make_adw_id()
-        tui_logger = setup_logger(adw_id, "bleue_tui")
-        tui_logger.info("Bleue TUI application started")
-
         # Push initial screen
         self.push_screen(IssueListScreen())
 
