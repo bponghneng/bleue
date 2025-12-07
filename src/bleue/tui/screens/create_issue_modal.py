@@ -6,8 +6,8 @@ from textual.containers import Container
 from textual.screen import ModalScreen
 from textual.widgets import Static
 
-from cape.core.database import create_issue as db_create_issue
-from cape.tui.components.issue_form import IssueForm
+from bleue.core.database import create_issue as db_create_issue
+from bleue.tui.components.issue_form import IssueForm
 
 
 class CreateIssueModal(ModalScreen[Optional[int]]):

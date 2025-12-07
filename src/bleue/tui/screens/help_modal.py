@@ -13,7 +13,7 @@ class HelpModal(ModalScreen):
 
     def compose(self) -> ComposeResult:
         """Create child widgets for the help screen."""
-        help_text = """# Cape TUI - Help
+        help_text = """# Bleue TUI - Help
 
 ## Keyboard Shortcuts
 
@@ -41,17 +41,17 @@ class HelpModal(ModalScreen):
 ## Workflow Management
 
 Workflows are managed through the CLI commands:
-- `cape workflow start <issue-id>` - Launch a workflow
-- `cape workflow list` - List all active workflows
-- `cape workflow status <workflow-id>` - Show workflow status
-- `cape workflow stop <workflow-id>` - Stop a running workflow
-- `cape workflow logs <workflow-id>` - View workflow logs
+- `bleue workflow start <issue-id>` - Launch a workflow
+- `bleue workflow list` - List all active workflows
+- `bleue workflow status <workflow-id>` - Show workflow status
+- `bleue workflow stop <workflow-id>` - Stop a running workflow
+- `bleue workflow logs <workflow-id>` - View workflow logs
 
 ## Troubleshooting
 
 - Ensure SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are set in .env
 - Check log files in agents/{adw_id}/adw_plan_build/execution.log
-- Workflows are stored in ~/.cape/ directory
+- Workflows are stored in ~/.bleue/ directory
 """
         yield Container(Static(help_text, id="help-content"), id="help-modal")
 
