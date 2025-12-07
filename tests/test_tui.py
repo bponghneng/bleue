@@ -5,10 +5,10 @@ from unittest.mock import Mock, PropertyMock, patch
 
 import pytest
 
-from cape.core.models import CapeComment, CapeIssue
-from cape.tui.components.comments import Comments
-from cape.tui.components.issue_form import IssueForm
-from cape.tui.screens.issue_detail_screen import IssueDetailScreen
+from bleue.core.models import CapeComment, CapeIssue
+from bleue.tui.components.comments import Comments
+from bleue.tui.components.issue_form import IssueForm
+from bleue.tui.screens.issue_detail_screen import IssueDetailScreen
 
 
 @pytest.fixture
@@ -355,7 +355,7 @@ def test_comments_widget_initialization():
 
 def test_comment_item_factory_default_type(mock_comments):
     """Test create_comment_widget returns DefaultComment for unrecognized types."""
-    from cape.tui.components.comment_item import (
+    from bleue.tui.components.comment_item import (
         DefaultComment,
         create_comment_widget,
     )
@@ -371,7 +371,7 @@ def test_comment_item_factory_default_type(mock_comments):
 
 def test_comment_item_factory_agent_claude():
     """Test create_comment_widget returns AgentClaudeComment for agent/claude type."""
-    from cape.tui.components.comment_item import (
+    from bleue.tui.components.comment_item import (
         AgentClaudeComment,
         create_comment_widget,
     )
@@ -392,7 +392,7 @@ def test_comment_item_factory_agent_claude():
 
 def test_comment_item_factory_system_workflow():
     """Test create_comment_widget returns SystemWorkflowComment for system/workflow type."""
-    from cape.tui.components.comment_item import (
+    from bleue.tui.components.comment_item import (
         SystemWorkflowComment,
         create_comment_widget,
     )
@@ -413,7 +413,7 @@ def test_comment_item_factory_system_workflow():
 
 def test_comment_item_stores_comment():
     """Test CommentItem stores the comment reference."""
-    from cape.tui.components.comment_item import CommentItem
+    from bleue.tui.components.comment_item import CommentItem
 
     comment = CapeComment(
         id=1,
@@ -429,7 +429,7 @@ def test_comment_item_stores_comment():
 
 def test_agent_claude_comment_text_layout():
     """Test AgentClaudeComment with raw.type='text' layout."""
-    from cape.tui.components.comment_item import AgentClaudeComment
+    from bleue.tui.components.comment_item import AgentClaudeComment
 
     comment = CapeComment(
         id=1,
@@ -449,7 +449,7 @@ def test_agent_claude_comment_text_layout():
 
 def test_agent_claude_comment_tool_use_layout():
     """Test AgentClaudeComment with raw.type='tool_use' layout."""
-    from cape.tui.components.comment_item import AgentClaudeComment
+    from bleue.tui.components.comment_item import AgentClaudeComment
 
     comment = CapeComment(
         id=1,
@@ -482,7 +482,7 @@ def test_agent_claude_comment_tool_use_layout():
 
 def test_agent_claude_comment_status_emoji_mapping():
     """Test AgentClaudeComment status emoji mapping."""
-    from cape.tui.components.comment_item import AgentClaudeComment
+    from bleue.tui.components.comment_item import AgentClaudeComment
 
     assert AgentClaudeComment._STATUS_EMOJI["completed"] == "✅"
     assert AgentClaudeComment._STATUS_EMOJI["in_progress"] == "🚀"
@@ -491,7 +491,7 @@ def test_agent_claude_comment_status_emoji_mapping():
 
 def test_agent_claude_comment_fallback_layout():
     """Test AgentClaudeComment falls back to comment body when raw.type is unknown."""
-    from cape.tui.components.comment_item import AgentClaudeComment
+    from bleue.tui.components.comment_item import AgentClaudeComment
 
     comment = CapeComment(
         id=1,
@@ -592,7 +592,7 @@ def test_comments_section_visible_for_completed_issue(mock_issue_completed, mock
 
 def test_v_key_triggers_view_detail():
     """Test that 'v' key binding triggers action_view_detail method."""
-    from cape.tui.screens.issue_list_screen import IssueListScreen
+    from bleue.tui.screens.issue_list_screen import IssueListScreen
 
     # Create screen instance
     screen = IssueListScreen()
@@ -609,7 +609,7 @@ def test_v_key_triggers_view_detail():
 
 def test_enter_key_still_works():
     """Test that existing 'enter' key binding still works after adding 'v'."""
-    from cape.tui.screens.issue_list_screen import IssueListScreen
+    from bleue.tui.screens.issue_list_screen import IssueListScreen
 
     # Create screen instance
     screen = IssueListScreen()
@@ -626,7 +626,7 @@ def test_enter_key_still_works():
 
 def test_both_keys_map_to_same_action():
     """Test that both 'enter' and 'v' map to the same action."""
-    from cape.tui.screens.issue_list_screen import IssueListScreen
+    from bleue.tui.screens.issue_list_screen import IssueListScreen
 
     screen = IssueListScreen()
 

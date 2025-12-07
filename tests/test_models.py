@@ -2,7 +2,7 @@
 
 import pytest
 
-from cape.core.models import CapeComment, CapeIssue
+from bleue.core.models import CapeComment, CapeIssue
 
 
 def test_cape_issue_creation():

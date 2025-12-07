@@ -4,10 +4,10 @@ from unittest.mock import Mock
 
 import pytest
 
-from cape.core.models import CapeIssue
-from cape.tui.screens.confirm_delete_modal import ConfirmDeleteModal
-from cape.tui.screens.issue_detail_screen import IssueDetailScreen
-from cape.tui.screens.issue_list_screen import IssueListScreen
+from bleue.core.models import CapeIssue
+from bleue.tui.screens.confirm_delete_modal import ConfirmDeleteModal
+from bleue.tui.screens.issue_detail_screen import IssueDetailScreen
+from bleue.tui.screens.issue_list_screen import IssueListScreen
 
 
 @pytest.fixture
