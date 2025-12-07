@@ -3,7 +3,7 @@
 from typing import Optional
 
 # Worker options: (display_name, worker_id)
-# Grouped by fleet: Alleycat, HailMary, Nebuchadnezzar, Tydirium
+# Grouped by fleet: Alleycat, HailMary, Local, Tydirium
 WORKER_OPTIONS: list[tuple[str, str | None]] = [
     ("Unassigned", None),
     ("Alleycat 1 (alleycat-1)", "alleycat-1"),
@@ -12,9 +12,9 @@ WORKER_OPTIONS: list[tuple[str, str | None]] = [
     ("HailMary 1 (hailmary-1)", "hailmary-1"),
     ("HailMary 2 (hailmary-2)", "hailmary-2"),
     ("HailMary 3 (hailmary-3)", "hailmary-3"),
-    ("Nebuchadnezzar 1 (nebuchadnezzar-1)", "nebuchadnezzar-1"),
-    ("Nebuchadnezzar 2 (nebuchadnezzar-2)", "nebuchadnezzar-2"),
-    ("Nebuchadnezzar 3 (nebuchadnezzar-3)", "nebuchadnezzar-3"),
+    ("Local 1 (local-1)", "local-1"),
+    ("Local 2 (local-2)", "local-2"),
+    ("Local 3 (local-3)", "local-3"),
     ("Tydirium 1 (tydirium-1)", "tydirium-1"),
     ("Tydirium 2 (tydirium-2)", "tydirium-2"),
     ("Tydirium 3 (tydirium-3)", "tydirium-3"),
@@ -36,10 +36,10 @@ def get_worker_display_name(worker_id: Optional[str]) -> str:
 
     Args:
         worker_id: The worker ID (e.g., "alleycat-1", "hailmary-2",
-            "nebuchadnezzar-3") or None for unassigned.
+            "local-3") or None for unassigned.
 
     Returns:
         The display name (e.g., "Alleycat 1", "HailMary 2",
-            "Nebuchadnezzar 3") or empty string for unassigned.
+            "Local 3") or empty string for unassigned.
     """
     return _WORKER_DISPLAY_NAMES.get(worker_id, "")
