@@ -1,23 +1,23 @@
-# CAPE TUI
+# Bleue TUI
 
 ## Overview
 
-The `cape` package provides a Textual-based terminal user interface (TUI) for
-CAPE workflow management. It provides an interactive interface for browsing
+The `bleue` package provides a Textual-based terminal user interface (TUI) for
+Bleue workflow management. It provides an interactive interface for browsing
 issues, viewing details, and managing workflow status using Supabase for
 persistence.
 
 ## Quick Start
 
 ```bash
-cd cape/app
+cd bleue/app
 uv sync
 
 # Launch the interactive TUI
-uv run cape
+uv run bleue
 
 # Show version
-uv run cape --version
+uv run bleue --version
 ```
 
 ## Environment & Configuration
@@ -42,7 +42,7 @@ Create a `.env` or set the variables in your shell before running.
 ## Tests
 
 ```bash
-cd cape/app
+cd bleue/app
 uv run pytest tests/ -v
 ```
 
@@ -51,7 +51,7 @@ uv run pytest tests/ -v
 ```
 bleue/
 ├── pyproject.toml        # build configuration
-├── src/cape/
+├── src/bleue/
 │   ├── cli/              # Typer CLI entry point
 │   ├── core/             # Shared infrastructure (database, models, utils)
 │   └── tui/              # Textual TUI components and screens
