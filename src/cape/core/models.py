@@ -1,22 +1,9 @@
-"""Data types for Cape CLI workflow components.
-
-Agent-specific models moved to cape.core.agents package.
-"""
+"""Data types for Cape TUI components."""
 
 from datetime import datetime
 from typing import Literal, Optional
 
 from pydantic import BaseModel, Field, field_validator
-
-# All slash commands used in the Cape workflow system
-SlashCommand = Literal[
-    "/implement",
-    "/triage:classify",
-    "/triage:chore",
-    "/triage:bug",
-    "/triage:feature",
-    "/triage:find-plan-file",
-]
 
 
 class CapeIssue(BaseModel):
