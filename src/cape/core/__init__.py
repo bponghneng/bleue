@@ -1,12 +1,9 @@
-"""Shared infrastructure used by Cape tooling (CLI, ADW, worker)."""
+"""Shared infrastructure used by Cape TUI."""
 
-from . import agent, database, models, paths, utils, workflow
+from . import database, models, utils
 
 __all__ = [
     "database",
     "models",
-    "paths",
     "utils",
-    "workflow",
-    "agent",
 ]

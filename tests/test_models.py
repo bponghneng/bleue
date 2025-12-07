@@ -2,7 +2,6 @@
 
 import pytest
 
-from cape.core.agents.claude import ClaudeAgentPromptRequest, ClaudeAgentTemplateRequest
 from cape.core.models import CapeComment, CapeIssue
 
 
@@ -64,36 +63,3 @@ def test_cape_comment_empty_validation():
     """Test that empty comment raises validation error."""
     with pytest.raises(ValueError):
         CapeComment(issue_id=1, comment="")
-
-
-def test_agent_prompt_request():
-    """Test ClaudeAgentPromptRequest creation."""
-    request = ClaudeAgentPromptRequest(
-        prompt="Test prompt",
-        adw_id="test123",
-        issue_id=42,
-        output_file="output.jsonl",
-    )
-    assert request.prompt == "Test prompt"
-    assert request.adw_id == "test123"
-    assert request.issue_id == 42
-    assert request.agent_name == "ops"
-    assert request.model == "opus"
-    assert request.output_file == "output.jsonl"
-
-
-def test_agent_template_request():
-    """Test ClaudeAgentTemplateRequest creation."""
-    request = ClaudeAgentTemplateRequest(
-        agent_name="ops",
-        slash_command="/adw-implement-plan",
-        args=["plan.md"],
-        adw_id="test123",
-        issue_id=42,
-    )
-    assert request.agent_name == "ops"
-    assert request.slash_command == "/adw-implement-plan"
-    assert request.args == ["plan.md"]
-    assert request.adw_id == "test123"
-    assert request.issue_id == 42
-    assert request.model == "sonnet"
