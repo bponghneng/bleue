@@ -1,4 +1,4 @@
-"""Shared infrastructure used by Cape TUI."""
+"""Shared infrastructure used by Bleue TUI."""
 
 from . import database, models, utils
 

@@ -15,12 +15,12 @@ from textual.widgets import (
     Static,
 )
 
-from cape.core.database import delete_issue, fetch_comments, fetch_issue
-from cape.core.models import CapeComment, CapeIssue
-from cape.tui.components.comments import Comments
-from cape.tui.screens.confirm_delete_modal import ConfirmDeleteModal
-from cape.tui.screens.edit_description_modal import EditDescriptionModal
-from cape.tui.worker_utils import get_worker_display_name
+from bleue.core.database import delete_issue, fetch_comments, fetch_issue
+from bleue.core.models import CapeComment, CapeIssue
+from bleue.tui.components.comments import Comments
+from bleue.tui.screens.confirm_delete_modal import ConfirmDeleteModal
+from bleue.tui.screens.edit_description_modal import EditDescriptionModal
+from bleue.tui.worker_utils import get_worker_display_name
 
 logger = logging.getLogger(__name__)
 

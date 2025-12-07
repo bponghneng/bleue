@@ -1,4 +1,4 @@
-"""Utility functions for Cape CLI workflow system."""
+"""Utility functions for Bleue CLI workflow system."""
 
 import logging
 import os
@@ -15,7 +15,7 @@ def make_adw_id() -> str:
 
 
 def _get_log_level() -> int:
-    """Get log level from CAPE_LOG_LEVEL environment variable.
+    """Get log level from BLEUE_LOG_LEVEL environment variable.
 
     Supports: DEBUG, INFO, WARNING, ERROR (case-insensitive).
     Defaults to INFO if not set or invalid.
@@ -23,7 +23,7 @@ def _get_log_level() -> int:
     Returns:
         Logging level constant
     """
-    level_str = os.environ.get("CAPE_LOG_LEVEL", "INFO").upper()
+    level_str = os.environ.get("BLEUE_LOG_LEVEL", "INFO").upper()
     level_map = {
         "DEBUG": logging.DEBUG,
         "INFO": logging.INFO,
@@ -43,7 +43,7 @@ def setup_logger(
 ) -> logging.Logger:
     """Set up logger that writes to both console and file using adw_id.
 
-    Log level is configurable via CAPE_LOG_LEVEL environment variable.
+    Log level is configurable via BLEUE_LOG_LEVEL environment variable.
     Supported values: DEBUG, INFO, WARNING, ERROR (case-insensitive).
     Default: INFO.
 
@@ -58,9 +58,9 @@ def setup_logger(
     Returns:
         Configured logger instance
     """
-    # Create log directory: .cape/logs/agents/{adw_id}/{trigger_type}/
+    # Create log directory: .bleue/logs/agents/{adw_id}/{trigger_type}/
     # Use current working directory as base or environment variable override
-    agents_dir = os.environ.get("CAPE_AGENTS_DIR", os.path.join(os.getcwd(), ".cape/logs/agents"))
+    agents_dir = os.environ.get("BLEUE_AGENTS_DIR", os.path.join(os.getcwd(), ".bleue/logs/agents"))
     log_dir = os.path.join(agents_dir, adw_id, trigger_type)
 
     # Atomic directory creation with proper error handling
@@ -70,11 +70,11 @@ def setup_logger(
         # Race condition - directory was created by another process
         pass
 
-    # Log file path: .cape/logs/agents/{adw_id}/{trigger_type}/execution.log
+    # Log file path: .bleue/logs/agents/{adw_id}/{trigger_type}/execution.log
     log_file = os.path.join(log_dir, "execution.log")
 
     # Create logger with unique name using adw_id
-    logger = logging.getLogger(f"cape_{adw_id}")
+    logger = logging.getLogger(f"bleue_{adw_id}")
     logger.setLevel(logging.DEBUG)
 
     # Clear any existing handlers to avoid duplicates
@@ -100,7 +100,7 @@ def setup_logger(
     logger.addHandler(file_handler)
 
     # Console handler - only if not in detached mode
-    # Uses CAPE_LOG_LEVEL for console output (file always captures DEBUG)
+    # Uses BLEUE_LOG_LEVEL for console output (file always captures DEBUG)
     if not detached_mode:
         console_handler = logging.StreamHandler(sys.stdout)
         console_handler.setLevel(_get_log_level())
@@ -112,7 +112,7 @@ def setup_logger(
         logger.addHandler(console_handler)
 
     # Log initial setup message
-    logger.info(f"Cape Logger initialized - ID: {adw_id} (detached={detached_mode})")
+    logger.info(f"Bleue Logger initialized - ID: {adw_id} (detached={detached_mode})")
     logger.debug(f"Log file: {log_file}")
 
     return logger
@@ -127,7 +127,7 @@ def get_logger(adw_id: str) -> logging.Logger:
     Returns:
         Logger instance
     """
-    return logging.getLogger(f"cape_{adw_id}")
+    return logging.getLogger(f"bleue_{adw_id}")
 
 
 def log_workflow_event(

@@ -8,7 +8,7 @@ from textual.containers import Container, Horizontal
 from textual.widgets import Collapsible, Pretty, Static
 
 if TYPE_CHECKING:
-    from cape.core.models import CapeComment
+    from bleue.core.models import CapeComment
 
 
 def _parse_raw(raw: Any) -> dict:

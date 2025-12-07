@@ -1,4 +1,4 @@
-"""Supabase client and helper functions for Cape issue workflow."""
+"""Supabase client and helper functions for Bleue issue workflow."""
 
 import logging
 import os
@@ -11,7 +11,7 @@ from postgrest.exceptions import APIError
 from supabase import Client, create_client
 from supabase.lib.client_options import SyncClientOptions
 
-from cape.core.models import CapeComment, CapeIssue
+from bleue.core.models import CapeComment, CapeIssue
 
 # Load environment variables early so Supabase config picks them up
 load_dotenv()

@@ -16,18 +16,18 @@ from textual.widgets import (
 )
 from textual.widgets._data_table import RowKey
 
-from cape.core.database import (
+from bleue.core.database import (
     delete_issue,
     fetch_all_issues,
     update_issue_assignment,
 )
-from cape.core.models import CapeIssue
-from cape.tui.screens.confirm_delete_modal import ConfirmDeleteModal
-from cape.tui.screens.create_issue_modal import CreateIssueModal
-from cape.tui.screens.help_modal import HelpModal
-from cape.tui.screens.issue_detail_screen import IssueDetailScreen
-from cape.tui.screens.worker_assign_modal import WorkerAssignModal
-from cape.tui.worker_utils import get_worker_display_name
+from bleue.core.models import CapeIssue
+from bleue.tui.screens.confirm_delete_modal import ConfirmDeleteModal
+from bleue.tui.screens.create_issue_modal import CreateIssueModal
+from bleue.tui.screens.help_modal import HelpModal
+from bleue.tui.screens.issue_detail_screen import IssueDetailScreen
+from bleue.tui.screens.worker_assign_modal import WorkerAssignModal
+from bleue.tui.worker_utils import get_worker_display_name
 
 logger = logging.getLogger(__name__)
 
@@ -211,7 +211,7 @@ class IssueListScreen(Screen):
 
         # Get current assignment from database - we need to fetch the actual issue
         # to get the worker_id, since the table only shows display names
-        from cape.core.database import fetch_issue
+        from bleue.core.database import fetch_issue
 
         try:
             current_issue = fetch_issue(issue_id)

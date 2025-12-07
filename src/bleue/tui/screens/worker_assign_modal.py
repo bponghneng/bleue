@@ -1,4 +1,4 @@
-"""Worker assignment modal widget for Cape TUI."""
+"""Worker assignment modal widget for Bleue TUI."""
 
 from typing import Optional
 
@@ -7,7 +7,7 @@ from textual.containers import Container, Horizontal
 from textual.screen import ModalScreen
 from textual.widgets import Button, RadioButton, RadioSet, Static
 
-from cape.tui.worker_utils import WORKER_OPTIONS
+from bleue.tui.worker_utils import WORKER_OPTIONS
 
 
 class WorkerAssignModal(ModalScreen[Optional[str]]):
