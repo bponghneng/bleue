@@ -184,7 +184,7 @@ wheels = [
 ]
 
 [[package]]
-name = "cape"
+name = "bleue"
 version = "0.1.0"
 source = { editable = "." }
 dependencies = [
