@@ -185,7 +185,7 @@ class TestUpdateIssueStatus:
         with patch("cape.worker.database.get_client", return_value=mock_client):
             database.update_issue_status(123, "completed")
 
-            mock_client.table.assert_called_once_with("cape_issues")
+            mock_client.table.assert_called_once_with("issues")
             mock_table.update.assert_called_once_with({"status": "completed"})
             mock_update.eq.assert_called_once_with("id", 123)
             mock_eq.execute.assert_called_once()
