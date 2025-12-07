@@ -178,7 +178,7 @@ For asynchronous workflow processing, use the worker daemon (see Worker Features
 
 ## Worker Features
 
-- Polls `cape_issues` for `status='pending'`, locks the next row via a
+- Polls `issues` for `status='pending'`, locks the next row via a
   PostgreSQL function, and marks it `started` while recording the `worker_id`.
 - Spawns `uv run cape-adw <issue-id> --adw-id <workflow-id>` with clear logging
   so you can tail progress from the TUI or by reading log files directly.
@@ -197,23 +197,23 @@ in `cape/migrations/003_add_worker_assignment.sql`. Key pieces:
 ```sql
 CREATE TYPE worker_id AS ENUM ('alleycat-1', 'tydirium-1');
 
-ALTER TABLE cape_issues
+ALTER TABLE issues
 ADD COLUMN assigned_to worker_id;
 
 CREATE OR REPLACE FUNCTION get_and_lock_next_issue(p_worker_id worker_id)
 RETURNS TABLE (issue_id INTEGER, issue_description TEXT) AS $$
 BEGIN
     RETURN QUERY
-    UPDATE cape_issues
+    UPDATE issues
     SET status = 'started', assigned_to = p_worker_id, updated_at = now()
     WHERE id = (
-        SELECT id FROM cape_issues
+        SELECT id FROM issues
         WHERE status = 'pending'
           AND assigned_to = p_worker_id
         ORDER BY created_at ASC
         FOR UPDATE SKIP LOCKED LIMIT 1
     )
-    RETURNING cape_issues.id, cape_issues.description;
+    RETURNING issues.id, issues.description;
 END;
 $$ LANGUAGE plpgsql;
 ```
