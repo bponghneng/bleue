@@ -49,8 +49,11 @@ uv run pytest tests/ -v
 ## Project Layout
 
 ```
-app/
+bleue/
 ├── pyproject.toml        # build configuration
-├── src/cape/             # Python packages (core, cli, tui)
+├── src/cape/
+│   ├── cli/              # Typer CLI entry point
+│   ├── core/             # Shared infrastructure (database, models, utils)
+│   └── tui/              # Textual TUI components and screens
 └── tests/                # unit tests
 ```
