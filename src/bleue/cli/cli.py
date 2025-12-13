@@ -1,5 +1,6 @@
 """Bleue CLI - TUI-first workflow management CLI."""
 
+from pathlib import Path
 from typing import Optional
 
 import typer
@@ -7,8 +8,20 @@ from dotenv import load_dotenv
 
 from bleue import __version__
 
-# Load environment variables
-load_dotenv()
+
+def _find_dotenv() -> Path | None:
+    """Find .env file by searching up from current directory."""
+    current = Path.cwd()
+    for parent in [current, *current.parents]:
+        env_file = parent / ".env"
+        if env_file.is_file():
+            return env_file
+    return None
+
+
+# Load environment variables from .env file (search up from cwd)
+env_path = _find_dotenv()
+load_dotenv(dotenv_path=env_path)
 
 app = typer.Typer(
     invoke_without_command=True,

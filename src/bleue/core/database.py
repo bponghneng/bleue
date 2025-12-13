@@ -3,6 +3,7 @@
 import logging
 import os
 from functools import lru_cache
+from pathlib import Path
 from typing import Any, Dict, List, Optional, cast
 
 import httpx
@@ -13,8 +14,19 @@ from supabase.lib.client_options import SyncClientOptions
 
 from bleue.core.models import CapeComment, CapeIssue
 
+
+def _find_dotenv() -> Path | None:
+    """Find .env file by searching up from current directory."""
+    current = Path.cwd()
+    for parent in [current, *current.parents]:
+        env_file = parent / ".env"
+        if env_file.is_file():
+            return env_file
+    return None
+
+
 # Load environment variables early so Supabase config picks them up
-load_dotenv()
+load_dotenv(dotenv_path=_find_dotenv())
 
 logger = logging.getLogger(__name__)
 
