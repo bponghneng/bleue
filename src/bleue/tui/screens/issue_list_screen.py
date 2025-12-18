@@ -71,7 +71,7 @@ class IssueListScreen(Screen):
         table = self.query_one(DataTable)
         table.cursor_type = "row"
         table.add_column("ID")
-        table.add_column("Title")
+        table.add_column("Title", width=50)
         table.add_column("Status")
         table.add_column("Worker")
         self.load_issues()
@@ -102,7 +102,7 @@ class IssueListScreen(Screen):
                 issue.title,
                 issue.status,
                 assigned,
-                height=2,
+                height=3,
                 key=str(issue.id),
             )
 
@@ -131,7 +131,7 @@ class IssueListScreen(Screen):
         # Get issue data from the table row
         row_data = table.get_row_at(table.cursor_row)
         issue_id = int(row_data[0])
-        issue_description = str(row_data[1])
+        issue_title = str(row_data[1])
         issue_status = str(row_data[2])
         base_status = issue_status.split()[0] if issue_status else ""
         coordinate = Coordinate(row=table.cursor_row, column=0)
@@ -147,7 +147,7 @@ class IssueListScreen(Screen):
 
         # Show confirmation modal with callback
         callback = partial(self.handle_delete_confirmation, issue_id, row_key)
-        self.app.push_screen(ConfirmDeleteModal(issue_id, issue_description), callback)
+        self.app.push_screen(ConfirmDeleteModal(issue_id, issue_title), callback)
 
     def handle_delete_confirmation(
         self, issue_id: int, row_key: RowKey, confirmed: Optional[bool]
