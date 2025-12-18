@@ -36,7 +36,7 @@ class ConfirmDeleteForm(Container):
 
     def compose(self) -> ComposeResult:
         """Create child widgets for the form."""
-        # Truncate description if too long
+        # Truncate title if too long
         display_title = self.issue_title[:100]
         if len(self.issue_title) > 100:
             display_title += "..."

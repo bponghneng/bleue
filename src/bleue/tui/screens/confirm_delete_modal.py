@@ -10,11 +10,11 @@ class ConfirmDeleteModal(ModalScreen[bool]):
     """Modal dialog for confirming issue deletion."""
 
     def __init__(self, issue_id: int, issue_title: str):
-        """Initialize with issue ID and description.
+        """Initialize with issue ID and title.
 
         Args:
             issue_id: The ID of the issue to delete.
-            issue_title: The issue description (will be truncated for display).
+            issue_title: The issue title (will be truncated for display).
         """
         super().__init__()
         self.issue_id = issue_id
