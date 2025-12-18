@@ -41,8 +41,8 @@ class IssueForm(Container):
             Rule(line_style="dashed", classes="divider"),
             TextArea(id="issue-description", language="markdown"),
             Horizontal(
+                Button("Cancel", variant="default", compact=True, flat=True, id="cancel-btn"),
                 Button("Save", variant="success", compact=True, flat=True, id="save-btn"),
-                Button("Cancel", variant="error", compact=True, flat=True, id="cancel-btn"),
                 id="button-row",
             ),
             id="issue-form",
