@@ -39,11 +39,11 @@ class TestConfirmDeleteModal:
         assert modal.issue_id == mock_issue.id
         assert modal.issue_title == mock_issue.description
 
-    def test_modal_stores_full_description(self):
-        """Test that modal stores full description (truncation happens during render)."""
+    def test_modal_stores_full_title(self):
+        """Test that modal stores full title (truncation happens during render)."""
         long_desc = "x" * 150
         modal = ConfirmDeleteModal(1, long_desc)
-        # Modal stores the full description
+        # Modal stores the full title
         assert modal.issue_title == long_desc
         # Truncation happens in compose() method when rendering
 
