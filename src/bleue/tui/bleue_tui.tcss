@@ -94,6 +94,28 @@ ModalScreen {
     align: center middle;
 }
 
+#confirm-delete-form {
+    height: auto;
+}
+
+#delete-issue-title-label {
+    height: 2;
+}
+
+#delete-issue-title-text {
+    background: $surface-darken-1;
+    color: $text;
+    margin: 0 0 1 0;
+    padding: 1;
+    width: 100%;
+}
+
+#delete-warning {
+    width: 100%;
+    content-align: left middle;
+    color: $error;
+}
+
 #issue-form {
     height: auto;
 }
@@ -199,23 +221,6 @@ CommentHeader {
     padding: 1 2;
 }
 
-#issue-preview {
-    width: 100%;
-    padding: 1;
-    margin-bottom: 1;
-    border: solid $primary;
-    background: $panel;
-}
-
-#delete-warning {
-    width: 100%;
-    content-align: center middle;
-    padding: 1;
-    margin-bottom: 1;
-    color: $error;
-    text-style: bold;
-}
-
 /* Help Screen */
 #help-modal {
     width: 100;
@@ -233,5 +238,10 @@ CommentHeader {
 
 /* IssueForm Widget */
 IssueForm {
+    height: auto;
+}
+
+/* ConfirmDeleteForm Widget */
+ConfirmDeleteForm {
     height: auto;
 }
