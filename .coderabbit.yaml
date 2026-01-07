@@ -1,0 +1,291 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+# =============================================================================
+# CodeRabbit CLI Configuration for bleue
+# =============================================================================
+# Optimized for local CLI reviews with AI coding agents (Claude Code, Codex, etc.)
+# Usage: coderabbit review --prompt-only
+#        coderabbit --plain --type uncommitted
+#
+# This config is designed for automated code reviews where output is consumed
+# by AI coding agents, NOT for GitHub/GitLab PR workflows.
+# =============================================================================
+
+language: en-US
+
+# Tone optimized for AI agent consumption - direct, actionable, structured
+# Note: tone_instructions has 250 char max, so detailed instructions go in path_instructions
+tone_instructions: "Be direct and actionable. Output structured findings with severity, file:line, problem, and fix. Prioritize bugs and security over style."
+
+early_access: false
+enable_free_tier: true
+
+reviews:
+  # Use assertive profile for clearer, more direct feedback for AI agents
+  profile: assertive
+
+  # Disable PR-specific features (not relevant for CLI reviews)
+  request_changes_workflow: false
+  high_level_summary: true
+  high_level_summary_placeholder: ""
+  high_level_summary_in_walkthrough: true
+  review_status: false
+  commit_status: false
+  fail_commit_status: false
+  collapse_walkthrough: true
+  changed_files_summary: true
+  sequence_diagrams: false
+  estimate_code_review_effort: false
+
+  # Disable PR-specific features
+  assess_linked_issues: false
+  related_issues: false
+  related_prs: false
+  suggested_labels: false
+  auto_apply_labels: false
+  suggested_reviewers: false
+  auto_assign_reviewers: false
+  poem: false
+
+  # Files to exclude from review
+  path_filters:
+    - "!**/__pycache__/**"
+    - "!**/*.pyc"
+    - "!**/.pytest_cache/**"
+    - "!**/.mypy_cache/**"
+    - "!**/.ruff_cache/**"
+    - "!**/uv.lock"
+    - "!**/*.egg-info/**"
+    - "!**/.git/**"
+    - "!**/dist/**"
+    - "!**/build/**"
+    - "!**/*.lock"
+
+  # Path-specific review instructions optimized for AI agent fixes
+  path_instructions:
+    - path: "**/*.py"
+      instructions: |
+        Python code review checklist for AI agent implementation:
+
+        CRITICAL - Fix immediately:
+        - Security vulnerabilities (SQL injection, hardcoded secrets, unsafe deserialization)
+        - Unhandled exceptions that could crash the application
+        - Race conditions in async code
+        - Memory leaks (unclosed resources, circular references)
+
+        HIGH - Should fix:
+        - Missing type hints on function signatures (parameters and return types)
+        - Bare except clauses (should catch specific exceptions)
+        - Missing null/None checks before accessing attributes
+        - Improper async/await usage (blocking calls in async functions)
+
+        MEDIUM - Recommend fixing:
+        - Missing docstrings on public functions/classes
+        - Complex functions that should be broken down (>50 lines)
+        - Duplicate code that could be refactored
+
+        Output format for each issue:
+        ```
+        [SEVERITY] file:line - Brief description
+        Problem: What's wrong
+        Fix: Exact code change needed
+        ```
+
+    - path: "src/bleue/tui/**/*.py"
+      instructions: |
+        Textual TUI-specific review for AI agent implementation:
+
+        CRITICAL:
+        - Blocking I/O in main thread (use workers: @work decorator)
+        - Missing await on async widget methods
+        - Infinite loops in compose() or on_mount()
+
+        HIGH:
+        - Reactive attributes not using reactive() decorator
+        - CSS classes not matching .tcss stylesheet definitions
+        - Missing message handlers for custom messages
+        - Improper screen/modal lifecycle (push_screen, pop_screen)
+
+        MEDIUM:
+        - Widget composition issues (compose vs mount)
+        - Event bubbling not stopped when needed (event.stop())
+        - Missing key bindings documentation
+
+        Textual patterns to enforce:
+        - Use `self.query_one()` with type hints: `self.query_one("#id", Button)`
+        - Use `@work(exclusive=True)` for cancellable background tasks
+        - Use `self.notify()` for user feedback, not print()
+
+    - path: "src/bleue/cli/**/*.py"
+      instructions: |
+        Typer CLI review for AI agent implementation:
+
+        HIGH:
+        - Missing help text on commands and options
+        - Commands without proper error handling (should use typer.Exit)
+        - Missing type annotations on command parameters
+
+        MEDIUM:
+        - Inconsistent use of typer.echo vs print
+        - Missing --help examples in docstrings
+        - Options without sensible defaults
+
+        Typer patterns to enforce:
+        - Use `typer.Option()` with help text for all options
+        - Use `typer.Argument()` for required positional args
+        - Use `raise typer.Exit(code=1)` for error exits
+        - Use `typer.style()` for colored output
+
+    - path: "src/bleue/core/**/*.py"
+      instructions: |
+        Core module review for AI agent implementation:
+
+        CRITICAL:
+        - Database connections not properly closed/released
+        - Missing transaction handling for multi-step operations
+        - Unvalidated user input passed to database queries
+
+        HIGH:
+        - Pydantic models missing field validators for critical fields
+        - Async database operations without proper error handling
+        - Missing retry logic for transient database errors
+
+        MEDIUM:
+        - Business logic mixed with database operations
+        - Missing logging for important operations
+        - Overly broad exception handling
+
+        Patterns to enforce:
+        - Use Pydantic `Field()` with descriptions and validation
+        - Use `async with` for database connections
+        - Separate data models from database operations
+
+    - path: "tests/**/*.py"
+      instructions: |
+        Test code review for AI agent implementation:
+
+        HIGH:
+        - Tests without assertions (test does nothing)
+        - Missing pytest.mark.asyncio on async test functions
+        - Tests that depend on execution order
+        - Missing mocks for external services (Supabase, HTTP)
+
+        MEDIUM:
+        - Missing edge case tests (empty input, None, errors)
+        - Duplicate test setup that should be fixtures
+        - Assertions without messages
+
+        Patterns to enforce:
+        - Use `@pytest.fixture` for reusable test setup
+        - Use `@pytest.mark.parametrize` for data-driven tests
+        - Use `pytest.raises(ExceptionType)` for exception testing
+        - Mock external dependencies with `unittest.mock` or `pytest-mock`
+
+    - path: "**/*.tcss"
+      instructions: |
+        Textual CSS review:
+        - Check for undefined CSS classes referenced in Python code
+        - Verify selector specificity (avoid overly broad selectors)
+        - Check for duplicate or conflicting rules
+
+    - path: "pyproject.toml"
+      instructions: |
+        Configuration review:
+        - Verify dependency version constraints are appropriate (not too loose/tight)
+        - Check for conflicting tool configurations
+        - Ensure Python version requirement matches code features used
+
+  abort_on_close: true
+  disable_cache: false
+
+  auto_review:
+    enabled: true
+    auto_incremental_review: true
+    ignore_title_keywords: []
+    labels: []
+    drafts: true
+    base_branches:
+      - main
+
+  finishing_touches:
+    docstrings:
+      enabled: false
+    unit_tests:
+      enabled: false
+
+  # Tool configuration - enable Python-relevant linters
+  # Note: Ruff automatically detects pyproject.toml, ruff.toml, or .ruff.toml in repo root
+  tools:
+    # Python linting - ruff auto-detects config from pyproject.toml
+    ruff:
+      enabled: true
+
+    # Security scanning - critical for AI agent awareness
+    gitleaks:
+      enabled: true
+
+    # YAML validation
+    yamllint:
+      enabled: true
+
+    # Markdown linting
+    markdownlint:
+      enabled: true
+
+    # Disable tools not relevant for local CLI reviews
+    github-checks:
+      enabled: false
+    languagetool:
+      enabled: false
+    pylint:
+      enabled: false
+    flake8:
+      enabled: false
+    eslint:
+      enabled: false
+    biome:
+      enabled: false
+    swiftlint:
+      enabled: false
+    phpstan:
+      enabled: false
+    golangci-lint:
+      enabled: false
+    rubocop:
+      enabled: false
+    detekt:
+      enabled: false
+    clippy:
+      enabled: false
+
+chat:
+  auto_reply: false
+
+knowledge_base:
+  opt_out: false
+  web_search:
+    enabled: false
+  learnings:
+    scope: auto
+  issues:
+    scope: local
+  pull_requests:
+    scope: local
+
+code_generation:
+  docstrings:
+    language: en-US
+    path_instructions:
+      - path: "**/*.py"
+        instructions: |
+          Generate Google-style docstrings.
+          Include: Args, Returns, Raises sections.
+          Keep descriptions concise.
+
+  unit_tests:
+    path_instructions:
+      - path: "src/**/*.py"
+        instructions: |
+          Generate pytest-style tests.
+          Use fixtures for setup.
+          Use pytest-asyncio for async.
+          Mock Supabase and external services.
