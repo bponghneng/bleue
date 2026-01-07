@@ -161,14 +161,14 @@ class AgentClaudeComment(CommentItem):
             elif name == "Task":
                 # Display Task tool description and prompt
                 raw_input = raw.get("input", {})
-                # Ensure description and prompt are strings before calling .replace()
+                # Ensure description and prompt are strings before parsing
                 description = raw_input.get("description")
                 prompt = raw_input.get("prompt")
                 description = str(description) if description is not None else ""
                 prompt = str(prompt) if prompt is not None else ""
                 # Parse newlines for proper display
-                description = description.replace("\\n", "\n")
-                prompt = prompt.replace("\\n", "\n")
+                description = self._parse_newlines(description)
+                prompt = self._parse_newlines(prompt)
                 if description:
                     yield Static(description, classes="comment-body", markup=False)
                     content_yielded = True
@@ -179,6 +179,18 @@ class AgentClaudeComment(CommentItem):
         # Always fall back to comment body if no content was rendered
         if not content_yielded and self.comment.comment:
             yield Static(self.comment.comment, classes="comment-body", markup=False)
+
+    @staticmethod
+    def _parse_newlines(text: str) -> str:
+        """Parse escaped newline characters for proper display.
+        
+        Args:
+            text: Input text that may contain escaped newlines (\\n)
+            
+        Returns:
+            Text with escaped newlines replaced with actual newline characters
+        """
+        return text.replace("\\n", "\n")
 
     @staticmethod
     def _extract_output(text: Any) -> dict | None:
