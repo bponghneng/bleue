@@ -145,15 +145,36 @@ class AgentClaudeComment(CommentItem):
                     yield Static(text_value, classes="comment-body", markup=False)
                 content_yielded = True
         elif raw_type == "tool_use":
-            # Display todos as checklist from raw.input.todos
-            todos = raw.get("input", {}).get("todos", [])
-            if todos:
-                for todo in todos:
-                    status = todo.get("status", "pending")
-                    content = todo.get("content", "")
-                    emoji = self._STATUS_EMOJI.get(status, "⏳")
-                    yield Static(f"{emoji} {content}", classes="comment-todo-item", markup=False)
-                content_yielded = True
+            name = raw.get("name")
+            if name == "TodoWrite":
+                # Display todos as checklist from raw.input.todos
+                todos = raw.get("input", {}).get("todos", [])
+                if todos:
+                    for todo in todos:
+                        status = todo.get("status", "pending")
+                        content = todo.get("content", "")
+                        emoji = self._STATUS_EMOJI.get(status, "⏳")
+                        yield Static(
+                            f"{emoji} {content}", classes="comment-todo-item", markup=False
+                        )
+                    content_yielded = True
+            elif name == "Task":
+                # Display Task tool description and prompt
+                raw_input = raw.get("input", {})
+                # Ensure description and prompt are strings before calling .replace()
+                description = raw_input.get("description")
+                prompt = raw_input.get("prompt")
+                description = str(description) if description is not None else ""
+                prompt = str(prompt) if prompt is not None else ""
+                # Parse newlines for proper display
+                description = description.replace("\\n", "\n")
+                prompt = prompt.replace("\\n", "\n")
+                if description:
+                    yield Static(description, classes="comment-body", markup=False)
+                    content_yielded = True
+                if prompt:
+                    yield Static(prompt, classes="comment-body", markup=False)
+                    content_yielded = True
 
         # Always fall back to comment body if no content was rendered
         if not content_yielded and self.comment.comment:
