@@ -183,10 +183,10 @@ class AgentClaudeComment(CommentItem):
     @staticmethod
     def _parse_newlines(text: str) -> str:
         """Parse escaped newline characters for proper display.
-        
+
         Args:
             text: Input text that may contain escaped newlines (\\n)
-            
+
         Returns:
             Text with escaped newlines replaced with actual newline characters
         """
