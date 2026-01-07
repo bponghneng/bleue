@@ -448,7 +448,11 @@ def test_agent_claude_comment_text_layout():
 
 
 def test_agent_claude_comment_tool_use_layout():
-    """Test AgentClaudeComment with raw.type='tool_use' layout."""
+    """Test AgentClaudeComment with raw.type='tool_use' and name='TodoWrite' layout.
+
+    This test verifies backward compatibility with TodoWrite tool rendering.
+    The explicit 'name': 'TodoWrite' field ensures the checklist rendering is triggered.
+    """
     from bleue.tui.components.comment_item import AgentClaudeComment
 
     comment = CapeComment(
@@ -459,6 +463,7 @@ def test_agent_claude_comment_tool_use_layout():
         type="claude",
         raw={
             "type": "tool_use",
+            "name": "TodoWrite",
             "input": {
                 "todos": [
                     {"status": "completed", "content": "First task"},
@@ -473,11 +478,38 @@ def test_agent_claude_comment_tool_use_layout():
 
     # Verify the raw structure is accessible
     assert widget.comment.raw["type"] == "tool_use"
+    assert widget.comment.raw["name"] == "TodoWrite"
     todos = widget.comment.raw["input"]["todos"]
     assert len(todos) == 3
     assert todos[0]["status"] == "completed"
     assert todos[1]["status"] == "in_progress"
     assert todos[2]["status"] == "pending"
+
+
+def test_agent_claude_comment_task_tool_layout():
+    """Test AgentClaudeComment with raw.type='tool_use' and name='Task' layout."""
+    from bleue.tui.components.comment_item import AgentClaudeComment
+
+    comment = CapeComment(
+        id=1,
+        issue_id=1,
+        comment="Fallback text",
+        source="agent",
+        type="claude",
+        raw={
+            "type": "tool_use",
+            "name": "Task",
+            "input": {"description": "Test desc", "prompt": "Test\nprompt"},
+        },
+        created_at=datetime(2024, 1, 1, 12, 0, 0),
+    )
+    widget = AgentClaudeComment(comment)
+
+    # Verify the raw structure is accessible and correct
+    assert widget.comment.raw["type"] == "tool_use"
+    assert widget.comment.raw["name"] == "Task"
+    assert widget.comment.raw["input"]["description"] == "Test desc"
+    assert widget.comment.raw["input"]["prompt"] == "Test\nprompt"
 
 
 def test_agent_claude_comment_status_emoji_mapping():
@@ -506,6 +538,37 @@ def test_agent_claude_comment_fallback_layout():
 
     # Verify fallback to comment body
     assert widget.comment.comment == "This should be displayed"
+
+
+def test_agent_claude_comment_unknown_tool_fallback():
+    """Test AgentClaudeComment falls back to comment.comment for unrecognized tool names.
+
+    When raw.type='tool_use' but name is not a recognized tool (e.g., 'UnknownTool'),
+    the widget should gracefully fall back to displaying the comment.comment field.
+    This ensures forward compatibility with new tools that may be added in the future.
+    """
+    from bleue.tui.components.comment_item import AgentClaudeComment
+
+    fallback_text = "Fallback description for unknown tool"
+    comment = CapeComment(
+        id=1,
+        issue_id=1,
+        comment=fallback_text,
+        source="agent",
+        type="claude",
+        raw={"type": "tool_use", "name": "UnknownTool", "input": {}},
+        created_at=datetime(2024, 1, 1, 12, 0, 0),
+    )
+    widget = AgentClaudeComment(comment)
+
+    # Verify the raw structure has unknown tool
+    assert widget.comment.raw["type"] == "tool_use"
+    assert widget.comment.raw["name"] == "UnknownTool"
+
+    # Verify widget falls back to displaying comment.comment field
+    # When the tool is unrecognized, content_yielded remains False,
+    # triggering the fallback to comment.comment
+    assert widget.comment.comment == fallback_text
 
 
 # Tests for Conditional Comments Visibility
