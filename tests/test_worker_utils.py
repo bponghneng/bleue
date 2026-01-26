@@ -32,9 +32,9 @@ class TestWorkerOptions:
         assert "alleycat-3" in worker_ids
 
         # Check for Executor workers
-        assert "executor-1" in worker_ids
-        assert "executor-2" in worker_ids
-        assert "executor-3" in worker_ids
+        assert "executor-1" in worker_ids, f"expected executor-1 to be in worker_ids, got {worker_ids}"
+        assert "executor-2" in worker_ids, f"expected executor-2 to be in worker_ids, got {worker_ids}"
+        assert "executor-3" in worker_ids, f"expected executor-3 to be in worker_ids, got {worker_ids}"
 
         # Check for Local workers
         assert "local-1" in worker_ids
@@ -42,9 +42,9 @@ class TestWorkerOptions:
         assert "local-3" in worker_ids
 
         # Check for X-Wing workers
-        assert "xwing-1" in worker_ids
-        assert "xwing-2" in worker_ids
-        assert "xwing-3" in worker_ids
+        assert "xwing-1" in worker_ids, f"expected xwing-1 to be in worker_ids, got {worker_ids}"
+        assert "xwing-2" in worker_ids, f"expected xwing-2 to be in worker_ids, got {worker_ids}"
+        assert "xwing-3" in worker_ids, f"expected xwing-3 to be in worker_ids, got {worker_ids}"
 
 
 class TestGetWorkerDisplayName:
@@ -58,9 +58,9 @@ class TestGetWorkerDisplayName:
 
     def test_executor_workers(self):
         """Test correct mapping for Executor workers."""
-        assert get_worker_display_name("executor-1") == "Executor 1"
-        assert get_worker_display_name("executor-2") == "Executor 2"
-        assert get_worker_display_name("executor-3") == "Executor 3"
+        assert get_worker_display_name("executor-1") == "Executor 1", "expected 'executor-1' to display as 'Executor 1'"
+        assert get_worker_display_name("executor-2") == "Executor 2", "expected 'executor-2' to display as 'Executor 2'"
+        assert get_worker_display_name("executor-3") == "Executor 3", "expected 'executor-3' to display as 'Executor 3'"
 
     def test_local_workers(self):
         """Test correct mapping for Local workers."""
