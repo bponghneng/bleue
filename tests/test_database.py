@@ -485,7 +485,9 @@ def test_update_issue_assignment_success(mock_get_client, mock_fetch_issue):
     assert issue.id == 1, "expected issue.id to be 1"
     assert issue.assigned_to == "executor-1", "expected assigned_to to be 'executor-1'"
     assert mock_table.update.call_count == 1, "expected mock_table.update to be called once"
-    assert mock_table.update.call_args.args[0] == {"assigned_to": "executor-1"}, "expected mock_table.update called with assigned_to payload"
+    assert mock_table.update.call_args.args[0] == {
+        "assigned_to": "executor-1"
+    }, "expected mock_table.update called with assigned_to payload"
 
 
 @patch("bleue.core.database.fetch_issue")
