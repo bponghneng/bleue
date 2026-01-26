@@ -394,9 +394,9 @@ def update_issue_assignment(issue_id: int, assigned_to: Optional[str]) -> CapeIs
     Args:
         issue_id: The ID of the issue to update.
         assigned_to: The worker ID to assign. Must be one of: None, "alleycat-1",
-                    "alleycat-2", "alleycat-3", "hailmary-1", "hailmary-2",
-                    "hailmary-3", "local-1", "local-2",
-                    "local-3", "tydirium-1", "tydirium-2", "tydirium-3".
+                    "alleycat-2", "alleycat-3", "executor-1", "executor-2",
+                    "executor-3", "local-1", "local-2",
+                    "local-3", "xwing-1", "xwing-2", "xwing-3".
 
     Returns:
         CapeIssue: The updated issue with new assignment and updated timestamp.
@@ -411,15 +411,15 @@ def update_issue_assignment(issue_id: int, assigned_to: Optional[str]) -> CapeIs
         "alleycat-1",
         "alleycat-2",
         "alleycat-3",
-        "hailmary-1",
-        "hailmary-2",
-        "hailmary-3",
+        "executor-1",
+        "executor-2",
+        "executor-3",
         "local-1",
         "local-2",
         "local-3",
-        "tydirium-1",
-        "tydirium-2",
-        "tydirium-3",
+        "xwing-1",
+        "xwing-2",
+        "xwing-3",
     ]
     if assigned_to not in valid_workers:
         raise ValueError(

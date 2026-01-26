@@ -31,20 +31,20 @@ class TestWorkerOptions:
         assert "alleycat-2" in worker_ids
         assert "alleycat-3" in worker_ids
 
-        # Check for HailMary workers
-        assert "hailmary-1" in worker_ids
-        assert "hailmary-2" in worker_ids
-        assert "hailmary-3" in worker_ids
+        # Check for Executor workers
+        assert "executor-1" in worker_ids
+        assert "executor-2" in worker_ids
+        assert "executor-3" in worker_ids
 
         # Check for Local workers
         assert "local-1" in worker_ids
         assert "local-2" in worker_ids
         assert "local-3" in worker_ids
 
-        # Check for Tydirium workers
-        assert "tydirium-1" in worker_ids
-        assert "tydirium-2" in worker_ids
-        assert "tydirium-3" in worker_ids
+        # Check for X-Wing workers
+        assert "xwing-1" in worker_ids
+        assert "xwing-2" in worker_ids
+        assert "xwing-3" in worker_ids
 
 
 class TestGetWorkerDisplayName:
@@ -56,11 +56,11 @@ class TestGetWorkerDisplayName:
         assert get_worker_display_name("alleycat-2") == "Alleycat 2"
         assert get_worker_display_name("alleycat-3") == "Alleycat 3"
 
-    def test_hailmary_workers(self):
-        """Test correct mapping for HailMary workers."""
-        assert get_worker_display_name("hailmary-1") == "HailMary 1"
-        assert get_worker_display_name("hailmary-2") == "HailMary 2"
-        assert get_worker_display_name("hailmary-3") == "HailMary 3"
+    def test_executor_workers(self):
+        """Test correct mapping for Executor workers."""
+        assert get_worker_display_name("executor-1") == "Executor 1"
+        assert get_worker_display_name("executor-2") == "Executor 2"
+        assert get_worker_display_name("executor-3") == "Executor 3"
 
     def test_local_workers(self):
         """Test correct mapping for Local workers."""
@@ -68,11 +68,11 @@ class TestGetWorkerDisplayName:
         assert get_worker_display_name("local-2") == "Local 2"
         assert get_worker_display_name("local-3") == "Local 3"
 
-    def test_tydirium_workers(self):
-        """Test correct mapping for Tydirium workers."""
-        assert get_worker_display_name("tydirium-1") == "Tydirium 1"
-        assert get_worker_display_name("tydirium-2") == "Tydirium 2"
-        assert get_worker_display_name("tydirium-3") == "Tydirium 3"
+    def test_xwing_workers(self):
+        """Test correct mapping for X-Wing workers."""
+        assert get_worker_display_name("xwing-1") == "X-Wing 1"
+        assert get_worker_display_name("xwing-2") == "X-Wing 2"
+        assert get_worker_display_name("xwing-3") == "X-Wing 3"
 
     def test_none_input(self):
         """Test behavior for None input (unassigned)."""

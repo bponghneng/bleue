@@ -22,7 +22,7 @@ class WorkerAssignModal(ModalScreen[Optional[str]]):
 
         Args:
             current_assignment: The current worker assignment (e.g., None,
-                'tydirium-1', 'alleycat-1').
+                'executor-1', 'alleycat-1').
         """
         super().__init__()
         self.current_assignment = current_assignment

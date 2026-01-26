@@ -516,24 +516,6 @@ def test_agent_claude_comment_task_tool_newline_parsing():
     """Test AgentClaudeComment Task tool properly parses escaped newlines."""
     from bleue.tui.components.comment_item import AgentClaudeComment
 
-    comment = CapeComment(
-        id=1,
-        issue_id=1,
-        comment="Fallback text",
-        source="agent",
-        type="claude",
-        raw={
-            "type": "tool_use",
-            "name": "Task",
-            "input": {
-                "description": "First line\\nSecond line",
-                "prompt": "Prompt line 1\\nPrompt line 2\\nPrompt line 3",
-            },
-        },
-        created_at=datetime(2024, 1, 1, 12, 0, 0),
-    )
-    widget = AgentClaudeComment(comment)
-
     # Verify the _parse_newlines helper method works correctly
     assert AgentClaudeComment._parse_newlines("Test\\nline") == "Test\nline"
     assert AgentClaudeComment._parse_newlines("No newlines") == "No newlines"

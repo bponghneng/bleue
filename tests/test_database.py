@@ -475,16 +475,16 @@ def test_update_issue_assignment_success(mock_get_client, mock_fetch_issue):
             "id": 1,
             "description": "Test issue",
             "status": "pending",
-            "assigned_to": "tydirium-1",
+            "assigned_to": "executor-1",
         }
     ]
     mock_eq.execute.return_value = mock_execute
     mock_get_client.return_value = mock_client
 
-    issue = update_issue_assignment(1, "tydirium-1")
+    issue = update_issue_assignment(1, "executor-1")
     assert issue.id == 1
-    assert issue.assigned_to == "tydirium-1"
-    mock_table.update.assert_called_once_with({"assigned_to": "tydirium-1"})
+    assert issue.assigned_to == "executor-1"
+    mock_table.update.assert_called_once_with({"assigned_to": "executor-1"})
 
 
 @patch("bleue.core.database.fetch_issue")
@@ -532,7 +532,7 @@ def test_update_issue_assignment_rejects_started_issue(mock_fetch_issue):
     mock_fetch_issue.return_value = mock_issue
 
     with pytest.raises(ValueError, match="Only pending issues can be assigned"):
-        update_issue_assignment(1, "tydirium-1")
+        update_issue_assignment(1, "executor-1")
 
 
 @patch("bleue.core.database.fetch_issue")
@@ -560,7 +560,7 @@ def test_update_issue_assignment_nonexistent_issue(mock_fetch_issue):
     mock_fetch_issue.side_effect = ValueError("Issue not found")
 
     with pytest.raises(ValueError, match="Failed to fetch issue"):
-        update_issue_assignment(999, "tydirium-1")
+        update_issue_assignment(999, "executor-1")
 
 
 @patch("bleue.core.database.fetch_issue")
@@ -584,15 +584,14 @@ def test_update_issue_assignment_new_workers(mock_get_client, mock_fetch_issue):
     mock_update.eq.return_value = mock_eq
     mock_get_client.return_value = mock_client
 
-    # Test all new worker IDs
+    # Test all new worker IDs (executor and xwing series)
     new_worker_ids = [
-        "alleycat-2",
-        "alleycat-3",
-        "local-1",
-        "local-2",
-        "local-3",
-        "tydirium-2",
-        "tydirium-3",
+        "executor-1",
+        "executor-2",
+        "executor-3",
+        "xwing-1",
+        "xwing-2",
+        "xwing-3",
     ]
 
     for worker_id in new_worker_ids:
@@ -613,7 +612,15 @@ def test_update_issue_assignment_new_workers(mock_get_client, mock_fetch_issue):
 @patch("bleue.core.database.get_client")
 def test_update_issue_assignment_rejects_invalid_new_worker(mock_get_client):
     """Test that assignment is rejected for invalid worker IDs not in expanded pool."""
-    invalid_workers = ["alleycat-4", "local-4", "tydirium-4", "unknown-1"]
+    invalid_workers = [
+        "alleycat-4",
+        "local-4",
+        "executor-4",
+        "xwing-4",
+        "tydirium-1",  # Old worker ID no longer valid
+        "hailmary-1",  # Old worker ID no longer valid
+        "unknown-1",
+    ]
 
     for worker_id in invalid_workers:
         with pytest.raises(ValueError, match="Invalid worker ID"):
