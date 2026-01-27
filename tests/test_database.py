@@ -592,6 +592,9 @@ def test_update_issue_assignment_new_workers(mock_get_client, mock_fetch_issue):
         "executor-1",
         "executor-2",
         "executor-3",
+        "tydirium-1",
+        "tydirium-2",
+        "tydirium-3",
         "xwing-1",
         "xwing-2",
         "xwing-3",
@@ -620,7 +623,6 @@ def test_update_issue_assignment_rejects_invalid_new_worker(mock_get_client):
         "local-4",
         "executor-4",
         "xwing-4",
-        "tydirium-1",  # Old worker ID no longer valid
         "hailmary-1",  # Old worker ID no longer valid
         "unknown-1",
     ]
