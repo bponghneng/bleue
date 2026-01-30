@@ -462,3 +462,59 @@ def update_issue_assignment(issue_id: int, assigned_to: Optional[str]) -> CapeIs
     except APIError as e:
         logger.error(f"Database error updating issue {issue_id} assignment: {e}")
         raise ValueError(f"Failed to update issue {issue_id} assignment: {e}") from e
+
+
+def update_issue_workflow(issue_id: int, workflow: Optional[str]) -> CapeIssue:
+    """Update the workflow of an existing issue.
+
+    Args:
+        issue_id: The ID of the issue to update.
+        workflow: The workflow to set. Must be one of: None, "main", "patch".
+
+    Returns:
+        CapeIssue: The updated issue with new workflow and updated timestamp.
+
+    Raises:
+        ValueError: If workflow is invalid, issue not found, issue is not pending,
+                   or database operation fails.
+    """
+    # Validate workflow parameter
+    valid_workflows = [None, "main", "patch"]
+    if workflow not in valid_workflows:
+        raise ValueError(
+            f"Invalid workflow '{workflow}'. Must be one of: "
+            f"{', '.join(repr(w) for w in valid_workflows)}"
+        )
+
+    # First, fetch the issue to check its status
+    try:
+        current_issue = fetch_issue(issue_id)
+    except ValueError as e:
+        raise ValueError(f"Failed to fetch issue {issue_id}: {e}") from e
+
+    # Only allow workflow change for pending issues
+    if current_issue.status != "pending":
+        raise ValueError(
+            f"Cannot change workflow for issue {issue_id} with status '{current_issue.status}'. "
+            f"Only pending issues can have their workflow changed."
+        )
+
+    client = get_client()
+
+    update_data: SupabaseRow = {
+        "workflow": workflow,
+    }
+
+    try:
+        response = client.table("issues").update(update_data).eq("id", issue_id).execute()
+
+        rows = cast(Optional[SupabaseRows], response.data)
+        if not rows:
+            raise ValueError(f"Issue with id {issue_id} not found")
+
+        first_row = cast(SupabaseRow, rows[0])
+        return CapeIssue(**first_row)
+
+    except APIError as e:
+        logger.error(f"Database error updating issue {issue_id} workflow: {e}")
+        raise ValueError(f"Failed to update issue {issue_id} workflow: {e}") from e
