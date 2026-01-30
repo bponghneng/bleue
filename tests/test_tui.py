@@ -677,7 +677,7 @@ def test_v_key_triggers_view_detail():
     # Verify 'v' maps to 'view_detail' action
     v_binding = next(b for b in screen.BINDINGS if b[0] == "v")
     assert v_binding[1] == "view_detail"
-    assert v_binding[2] == "View Details"
+    assert v_binding[2] == "View"
 
 
 def test_enter_key_still_works():
