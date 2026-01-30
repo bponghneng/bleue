@@ -165,10 +165,14 @@ class IssueDetailScreen(Screen):
         # Format assignment
         assigned_display = get_worker_display_name(issue.assigned_to) or "None"
 
+        # Format workflow
+        workflow_display = issue.workflow.title() if issue.workflow else "None"
+
         # Update metadata section
         metadata = f"""[bold]Issue #{issue.id}[/bold]
 Status: [{status_color}]{issue.status}[/{status_color}]
 Assigned to: {assigned_display}
+Workflow: {workflow_display}
 Created: {created}
 Updated: {updated}
 """

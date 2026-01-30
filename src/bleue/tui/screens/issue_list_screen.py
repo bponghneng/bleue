@@ -20,6 +20,7 @@ from bleue.core.database import (
     delete_issue,
     fetch_all_issues,
     update_issue_assignment,
+    update_issue_workflow,
 )
 from bleue.core.models import CapeIssue
 from bleue.tui.screens.confirm_delete_modal import ConfirmDeleteModal
@@ -27,6 +28,7 @@ from bleue.tui.screens.create_issue_modal import CreateIssueModal
 from bleue.tui.screens.help_modal import HelpModal
 from bleue.tui.screens.issue_detail_screen import IssueDetailScreen
 from bleue.tui.screens.worker_assign_modal import WorkerAssignModal
+from bleue.tui.screens.workflow_select_modal import WorkflowSelectModal
 from bleue.tui.worker_utils import get_worker_display_name
 
 logger = logging.getLogger(__name__)
@@ -37,10 +39,11 @@ class IssueListScreen(Screen):
 
     BINDINGS = [
         ("n", "new_issue", "New"),
-        ("v", "view_detail", "View Details"),
+        ("v", "view_detail", "View"),
         ("enter", "view_detail", "View Details"),
         ("r", "refresh", "Refresh"),
         ("a", "assign_worker", "Assign"),
+        ("w", "set_workflow", "Set Workflow"),
         ("d", "delete_issue", "Delete"),
         ("delete", "delete_issue", "Delete"),
         ("q", "quit", "Quit"),
@@ -224,9 +227,80 @@ class IssueListScreen(Screen):
         callback = partial(self.handle_worker_assignment, issue_id)
         self.app.push_screen(WorkerAssignModal(current_assignment), callback)
 
+    def action_set_workflow(self) -> None:
+        """Open workflow selection modal for the selected issue."""
+        table = self.query_one(DataTable)
+        if table.cursor_row is None or table.cursor_row < 0:
+            self.notify("No issue selected", severity="warning")
+            return
+
+        # Get issue data from the table row
+        row_data = table.get_row_at(table.cursor_row)
+        issue_id = int(row_data[0])
+        issue_status = str(row_data[2])
+        base_status = issue_status.split()[0] if issue_status else ""
+
+        # Only allow workflow selection for pending issues
+        if base_status != "pending":
+            self.notify("Only pending issues can have workflow set", severity="warning")
+            return
+
+        # Get current workflow from database - we need to fetch the actual issue
+        # to get the workflow value, since the table doesn't show it
+        from bleue.core.database import fetch_issue
+
+        try:
+            current_issue = fetch_issue(issue_id)
+            current_workflow = current_issue.workflow if current_issue else None
+        except Exception as e:
+            logger.warning(f"Failed to fetch current workflow for issue {issue_id}: {e}")
+            current_workflow = None
+
+        # Show workflow selection modal with callback
+        callback = partial(self.handle_workflow_selection, issue_id)
+        self.app.push_screen(WorkflowSelectModal(current_workflow), callback)
+
     def action_refresh(self) -> None:
         """Refresh the issue list."""
         self.load_issues()
+
+    def handle_workflow_selection(self, issue_id: int, workflow: Optional[str]) -> None:
+        """Handle the result of workflow selection modal.
+
+        Args:
+            issue_id: The ID of the issue to update.
+            workflow: The selected workflow value (None for no workflow, or workflow name).
+        """
+        # Perform workflow update in background thread
+        self.set_workflow_handler(issue_id, workflow)
+
+    @work(exclusive=True, thread=True)
+    def set_workflow_handler(self, issue_id: int, workflow: Optional[str]) -> None:
+        """Set workflow on issue in background thread.
+
+        Args:
+            issue_id: The ID of the issue to update.
+            workflow: The workflow to set (None for no workflow).
+        """
+        try:
+            updated_issue = update_issue_workflow(issue_id, workflow)
+            # Update UI from thread
+            self.app.call_from_thread(self._update_workflow_success, updated_issue)
+        except Exception as e:
+            self.app.call_from_thread(self.notify, f"Error setting workflow: {e}", severity="error")
+
+    def _update_workflow_success(self, updated_issue: CapeIssue) -> None:
+        """Show notification after successful workflow update.
+
+        Args:
+            updated_issue: The updated issue with new workflow.
+        """
+        workflow_display = updated_issue.workflow or "None"
+        if updated_issue.workflow:
+            msg = f"Issue #{updated_issue.id} workflow set to {workflow_display}"
+        else:
+            msg = f"Issue #{updated_issue.id} workflow cleared"
+        self.notify(msg, severity="information")
 
     def handle_worker_assignment(self, issue_id: int, assigned_to: Optional[str]) -> None:
         """Handle the result of worker assignment modal.
