@@ -4,7 +4,7 @@ import logging
 import os
 from functools import lru_cache
 from pathlib import Path
-from typing import Any, Dict, List, Optional, cast
+from typing import Any, Dict, List, Literal, Optional, cast
 
 import httpx
 from dotenv import load_dotenv
@@ -464,39 +464,24 @@ def update_issue_assignment(issue_id: int, assigned_to: Optional[str]) -> BleueI
         raise ValueError(f"Failed to update issue {issue_id} assignment: {e}") from e
 
 
-def update_issue_workflow(issue_id: int, workflow: Optional[str]) -> CapeIssue:
-    """Update the workflow of an existing issue.
+def update_issue_workflow(issue_id: int, workflow: Optional[Literal["main", "patch"]]) -> CapeIssue:
+    """Update the workflow type of an existing issue.
 
     Args:
         issue_id: The ID of the issue to update.
-        workflow: The workflow to set. Must be one of: None, "main", "patch".
+        workflow: The workflow type to set. Must be one of: None, "main", "patch".
 
     Returns:
-        CapeIssue: The updated issue with new workflow and updated timestamp.
+        CapeIssue: The updated issue with new type and updated timestamp.
 
     Raises:
-        ValueError: If workflow is invalid, issue not found, issue is not pending,
-                   or database operation fails.
+        ValueError: If workflow is invalid, issue not found, or database operation fails.
     """
-    # Validate workflow parameter
     valid_workflows = [None, "main", "patch"]
     if workflow not in valid_workflows:
         raise ValueError(
             f"Invalid workflow '{workflow}'. Must be one of: "
             f"{', '.join(repr(w) for w in valid_workflows)}"
-        )
-
-    # First, fetch the issue to check its status
-    try:
-        current_issue = fetch_issue(issue_id)
-    except ValueError as e:
-        raise ValueError(f"Failed to fetch issue {issue_id}: {e}") from e
-
-    # Only allow workflow change for pending issues
-    if current_issue.status != "pending":
-        raise ValueError(
-            f"Cannot change workflow for issue {issue_id} with status '{current_issue.status}'. "
-            f"Only pending issues can have their workflow changed."
         )
 
     client = get_client()

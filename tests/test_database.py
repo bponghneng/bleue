@@ -3,6 +3,7 @@
 from unittest.mock import Mock, patch
 
 import pytest
+from postgrest.exceptions import APIError
 
 from bleue.core.database import (
     SupabaseConfig,
@@ -633,19 +634,9 @@ def test_update_issue_assignment_rejects_invalid_new_worker(mock_get_client):
             update_issue_assignment(1, worker_id)
 
 
-# Tests for update_issue_workflow
-
-
-@patch("bleue.core.database.fetch_issue")
 @patch("bleue.core.database.get_client")
-def test_update_issue_workflow_success_main(mock_get_client, mock_fetch_issue):
+def test_update_issue_workflow_main(mock_get_client):
     """Test successful workflow update to 'main'."""
-    # Mock fetch_issue to return a pending issue
-    mock_issue = Mock()
-    mock_issue.status = "pending"
-    mock_fetch_issue.return_value = mock_issue
-
-    # Mock the database client
     mock_client = Mock()
     mock_table = Mock()
     mock_update = Mock()
@@ -656,31 +647,20 @@ def test_update_issue_workflow_success_main(mock_get_client, mock_fetch_issue):
     mock_table.update.return_value = mock_update
     mock_update.eq.return_value = mock_eq
     mock_execute.data = [
-        {
-            "id": 1,
-            "description": "Test issue",
-            "status": "pending",
-            "type": "main",
-        }
+        {"id": 1, "description": "Test issue", "status": "pending", "type": "main"}
     ]
     mock_eq.execute.return_value = mock_execute
     mock_get_client.return_value = mock_client
 
     issue = update_issue_workflow(1, "main")
-    assert issue.id == 1, "expected issue.id to be 1"
-    assert issue.type == "main", "expected type to be 'main'"
+    assert issue.id == 1
+    assert issue.type == "main"
+    mock_table.update.assert_called_once_with({"type": "main"})
 
 
-@patch("bleue.core.database.fetch_issue")
 @patch("bleue.core.database.get_client")
-def test_update_issue_workflow_success_patch(mock_get_client, mock_fetch_issue):
+def test_update_issue_workflow_patch(mock_get_client):
     """Test successful workflow update to 'patch'."""
-    # Mock fetch_issue to return a pending issue
-    mock_issue = Mock()
-    mock_issue.status = "pending"
-    mock_fetch_issue.return_value = mock_issue
-
-    # Mock the database client
     mock_client = Mock()
     mock_table = Mock()
     mock_update = Mock()
@@ -691,31 +671,20 @@ def test_update_issue_workflow_success_patch(mock_get_client, mock_fetch_issue):
     mock_table.update.return_value = mock_update
     mock_update.eq.return_value = mock_eq
     mock_execute.data = [
-        {
-            "id": 1,
-            "description": "Test issue",
-            "status": "pending",
-            "type": "patch",
-        }
+        {"id": 2, "description": "Test issue", "status": "started", "type": "patch"}
     ]
     mock_eq.execute.return_value = mock_execute
     mock_get_client.return_value = mock_client
 
-    issue = update_issue_workflow(1, "patch")
-    assert issue.id == 1, "expected issue.id to be 1"
-    assert issue.type == "patch", "expected type to be 'patch'"
+    issue = update_issue_workflow(2, "patch")
+    assert issue.id == 2
+    assert issue.type == "patch"
+    mock_table.update.assert_called_once_with({"type": "patch"})
 
 
-@patch("bleue.core.database.fetch_issue")
 @patch("bleue.core.database.get_client")
-def test_update_issue_workflow_success_none(mock_get_client, mock_fetch_issue):
-    """Test successful workflow update to None."""
-    # Mock fetch_issue to return a pending issue
-    mock_issue = Mock()
-    mock_issue.status = "pending"
-    mock_fetch_issue.return_value = mock_issue
-
-    # Mock the database client
+def test_update_issue_workflow_none(mock_get_client):
+    """Test clearing workflow by setting to None."""
     mock_client = Mock()
     mock_table = Mock()
     mock_update = Mock()
@@ -725,72 +694,26 @@ def test_update_issue_workflow_success_none(mock_get_client, mock_fetch_issue):
     mock_client.table.return_value = mock_table
     mock_table.update.return_value = mock_update
     mock_update.eq.return_value = mock_eq
-    mock_execute.data = [
-        {
-            "id": 1,
-            "description": "Test issue",
-            "status": "pending",
-            "type": None,
-        }
-    ]
+    mock_execute.data = [{"id": 1, "description": "Test issue", "status": "pending", "type": None}]
     mock_eq.execute.return_value = mock_execute
     mock_get_client.return_value = mock_client
 
     issue = update_issue_workflow(1, None)
-    assert issue.id == 1, "expected issue.id to be 1"
-    assert issue.type is None, "expected type to be None"
+    assert issue.id == 1
+    assert issue.type is None
+    mock_table.update.assert_called_once_with({"type": None})
 
 
 @patch("bleue.core.database.get_client")
-def test_update_issue_workflow_invalid_workflow(mock_get_client):
-    """Test that invalid workflow strings raise ValueError."""
+def test_update_issue_workflow_invalid(mock_get_client):
+    """Test updating with invalid workflow value fails."""
     with pytest.raises(ValueError, match="Invalid workflow"):
-        update_issue_workflow(1, "invalid")
+        update_issue_workflow(1, "invalid_workflow")
 
 
-@patch("bleue.core.database.fetch_issue")
-def test_update_issue_workflow_rejects_started_issue(mock_fetch_issue):
-    """Test that workflow update is rejected for started issues."""
-    # Mock fetch_issue to return a started issue
-    mock_issue = Mock()
-    mock_issue.status = "started"
-    mock_fetch_issue.return_value = mock_issue
-
-    with pytest.raises(ValueError, match="Only pending issues can have their workflow changed"):
-        update_issue_workflow(1, "main")
-
-
-@patch("bleue.core.database.fetch_issue")
-def test_update_issue_workflow_rejects_completed_issue(mock_fetch_issue):
-    """Test that workflow update is rejected for completed issues."""
-    # Mock fetch_issue to return a completed issue
-    mock_issue = Mock()
-    mock_issue.status = "completed"
-    mock_fetch_issue.return_value = mock_issue
-
-    with pytest.raises(ValueError, match="Only pending issues can have their workflow changed"):
-        update_issue_workflow(1, "patch")
-
-
-@patch("bleue.core.database.fetch_issue")
-def test_update_issue_workflow_nonexistent_issue(mock_fetch_issue):
-    """Test workflow update fails for non-existent issue."""
-    mock_fetch_issue.side_effect = ValueError("Issue not found")
-
-    with pytest.raises(ValueError, match="Failed to fetch issue"):
-        update_issue_workflow(999, "main")
-
-
-@patch("bleue.core.database.fetch_issue")
 @patch("bleue.core.database.get_client")
-def test_update_issue_workflow_not_found_in_db(mock_get_client, mock_fetch_issue):
-    """Test workflow update when DB returns no rows (not found)."""
-    # Mock fetch_issue to return a pending issue
-    mock_issue = Mock()
-    mock_issue.status = "pending"
-    mock_fetch_issue.return_value = mock_issue
-
-    # Mock the database client to return no rows
+def test_update_issue_workflow_not_found(mock_get_client):
+    """Test updating workflow for non-existent issue."""
     mock_client = Mock()
     mock_table = Mock()
     mock_update = Mock()
@@ -806,3 +729,23 @@ def test_update_issue_workflow_not_found_in_db(mock_get_client, mock_fetch_issue
 
     with pytest.raises(ValueError, match="not found"):
         update_issue_workflow(999, "main")
+
+
+@patch("bleue.core.database.get_client")
+def test_update_issue_workflow_database_error(mock_get_client):
+    """Test handling of database API errors during workflow update."""
+    mock_client = Mock()
+    mock_table = Mock()
+    mock_update = Mock()
+    mock_eq = Mock()
+
+    mock_client.table.return_value = mock_table
+    mock_table.update.return_value = mock_update
+    mock_update.eq.return_value = mock_eq
+    mock_eq.execute.side_effect = APIError(
+        {"message": "DB connection failed", "code": "500", "details": "", "hint": ""}
+    )
+    mock_get_client.return_value = mock_client
+
+    with pytest.raises(ValueError, match="Failed to update issue"):
+        update_issue_workflow(1, "patch")
