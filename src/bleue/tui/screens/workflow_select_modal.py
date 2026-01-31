@@ -25,6 +25,7 @@ class WorkflowSelection:
         confirmed: True if user confirmed selection, False if cancelled.
         value: The selected workflow value (None, 'main', or 'patch').
     """
+
     confirmed: bool
     value: Optional[str]
 
