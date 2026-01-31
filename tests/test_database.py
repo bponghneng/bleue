@@ -18,7 +18,7 @@ from bleue.core.database import (
     update_issue_status,
     update_issue_workflow,
 )
-from bleue.core.models import CapeComment
+from bleue.core.models import BleueComment
 
 
 @pytest.fixture
@@ -198,7 +198,7 @@ def test_create_comment_success(mock_get_client):
     mock_insert.execute.return_value = mock_execute
     mock_get_client.return_value = mock_client
 
-    comment_payload = CapeComment(
+    comment_payload = BleueComment(
         issue_id=1,
         comment="Test comment",
         raw={"test": "data"},
