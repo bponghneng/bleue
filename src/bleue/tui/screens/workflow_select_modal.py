@@ -1,8 +1,11 @@
 """Workflow selection modal widget for Bleue TUI."""
 
-from typing import Optional
+from collections.abc import Sequence
+from dataclasses import dataclass
+from typing import ClassVar, Optional
 
 from textual.app import ComposeResult
+from textual.binding import Binding
 from textual.containers import Container, Horizontal
 from textual.screen import ModalScreen
 from textual.widgets import Button, RadioButton, RadioSet, Static
@@ -15,14 +18,26 @@ WORKFLOW_OPTIONS: list[tuple[str, str | None]] = [
 ]
 
 
-class WorkflowSelectModal(ModalScreen[Optional[str]]):
+@dataclass
+class WorkflowSelection:
+    """Result of workflow selection modal.
+
+    Attributes:
+        confirmed: True if user confirmed selection, False if cancelled.
+        value: The selected workflow value (None, 'main', or 'patch').
+    """
+    confirmed: bool
+    value: Optional[str]
+
+
+class WorkflowSelectModal(ModalScreen[WorkflowSelection]):
     """Modal for selecting a workflow for an issue."""
 
-    BINDINGS = [
+    BINDINGS: ClassVar[list[Binding | tuple[str, str] | tuple[str, str, str]]] = [
         ("escape", "cancel", "Cancel"),
     ]
 
-    def __init__(self, current_workflow: Optional[str] = None):
+    def __init__(self, current_workflow: Optional[str] = None) -> None:
         """Initialize the workflow selection modal.
 
         Args:
@@ -84,7 +99,7 @@ class WorkflowSelectModal(ModalScreen[Optional[str]]):
         selected_button = radioset.pressed_button
 
         if selected_button is None:
-            self.dismiss(None)
+            self.dismiss(WorkflowSelection(confirmed=True, value=None))
             return
 
         # Build a lookup from radio button ID to workflow value
@@ -96,8 +111,8 @@ class WorkflowSelectModal(ModalScreen[Optional[str]]):
         # Look up the workflow value from the selected button's ID
         button_id = selected_button.id
         workflow_value = id_to_workflow.get(button_id) if button_id else None
-        self.dismiss(workflow_value)
+        self.dismiss(WorkflowSelection(confirmed=True, value=workflow_value))
 
     def action_cancel(self) -> None:
         """Cancel and close the modal without making changes."""
-        self.dismiss(None)
+        self.dismiss(WorkflowSelection(confirmed=False, value=self.current_workflow))
