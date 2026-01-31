@@ -28,7 +28,10 @@ from bleue.tui.screens.create_issue_modal import CreateIssueModal
 from bleue.tui.screens.help_modal import HelpModal
 from bleue.tui.screens.issue_detail_screen import IssueDetailScreen
 from bleue.tui.screens.worker_assign_modal import WorkerAssignModal
-from bleue.tui.screens.workflow_select_modal import WorkflowSelectModal
+from bleue.tui.screens.workflow_select_modal import (
+    WorkflowSelection,
+    WorkflowSelectModal,
+)
 from bleue.tui.worker_utils import get_worker_display_name
 
 logger = logging.getLogger(__name__)
@@ -245,10 +248,19 @@ class IssueListScreen(Screen):
             self.notify("Only pending issues can have workflow set", severity="warning")
             return
 
-        # Get current workflow from database - we need to fetch the actual issue
-        # to get the workflow value, since the table doesn't show it
+        # Fetch current workflow in background thread
+        self._fetch_issue_worker(issue_id)
+
+    @work(exclusive=True, thread=True)
+    def _fetch_issue_worker(self, issue_id: int) -> None:
+        """Fetch issue data in background thread and show workflow modal.
+
+        Args:
+            issue_id: The ID of the issue to fetch.
+        """
         from bleue.core.database import fetch_issue
 
+        current_workflow: Optional[str] = None
         try:
             current_issue = fetch_issue(issue_id)
             current_workflow = current_issue.workflow if current_issue else None
@@ -256,23 +268,29 @@ class IssueListScreen(Screen):
             logger.warning(f"Failed to fetch current workflow for issue {issue_id}: {e}")
             current_workflow = None
 
-        # Show workflow selection modal with callback
+        # Show modal on main thread
         callback = partial(self.handle_workflow_selection, issue_id)
-        self.app.push_screen(WorkflowSelectModal(current_workflow), callback)
+        self.app.call_from_thread(
+            self.app.push_screen, WorkflowSelectModal(current_workflow), callback
+        )
 
     def action_refresh(self) -> None:
         """Refresh the issue list."""
         self.load_issues()
 
-    def handle_workflow_selection(self, issue_id: int, workflow: Optional[str]) -> None:
+    def handle_workflow_selection(self, issue_id: int, selection: WorkflowSelection) -> None:
         """Handle the result of workflow selection modal.
 
         Args:
             issue_id: The ID of the issue to update.
-            workflow: The selected workflow value (None for no workflow, or workflow name).
+            selection: The workflow selection result.
         """
+        # Early return if cancelled
+        if not selection.confirmed:
+            return
+
         # Perform workflow update in background thread
-        self.set_workflow_handler(issue_id, workflow)
+        self.set_workflow_handler(issue_id, selection.value)
 
     @work(exclusive=True, thread=True)
     def set_workflow_handler(self, issue_id: int, workflow: Optional[str]) -> None:
