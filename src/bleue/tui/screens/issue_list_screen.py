@@ -263,7 +263,7 @@ class IssueListScreen(Screen):
         current_workflow: Optional[str] = None
         try:
             current_issue = fetch_issue(issue_id)
-            current_workflow = current_issue.workflow if current_issue else None
+            current_workflow = current_issue.type if current_issue else None
         except Exception as e:
             logger.warning(f"Failed to fetch current workflow for issue {issue_id}: {e}")
             current_workflow = None
@@ -320,8 +320,8 @@ class IssueListScreen(Screen):
         Args:
             updated_issue: The updated issue with new workflow.
         """
-        workflow_display = updated_issue.workflow or "None"
-        if updated_issue.workflow:
+        workflow_display = updated_issue.type or "None"
+        if updated_issue.type:
             msg = f"Issue #{updated_issue.id} workflow set to {workflow_display}"
         else:
             msg = f"Issue #{updated_issue.id} workflow cleared"

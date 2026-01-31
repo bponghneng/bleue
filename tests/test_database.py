@@ -660,7 +660,7 @@ def test_update_issue_workflow_success_main(mock_get_client, mock_fetch_issue):
             "id": 1,
             "description": "Test issue",
             "status": "pending",
-            "workflow": "main",
+            "type": "main",
         }
     ]
     mock_eq.execute.return_value = mock_execute
@@ -668,7 +668,7 @@ def test_update_issue_workflow_success_main(mock_get_client, mock_fetch_issue):
 
     issue = update_issue_workflow(1, "main")
     assert issue.id == 1, "expected issue.id to be 1"
-    assert issue.workflow == "main", "expected workflow to be 'main'"
+    assert issue.type == "main", "expected type to be 'main'"
 
 
 @patch("bleue.core.database.fetch_issue")
@@ -695,7 +695,7 @@ def test_update_issue_workflow_success_patch(mock_get_client, mock_fetch_issue):
             "id": 1,
             "description": "Test issue",
             "status": "pending",
-            "workflow": "patch",
+            "type": "patch",
         }
     ]
     mock_eq.execute.return_value = mock_execute
@@ -703,7 +703,7 @@ def test_update_issue_workflow_success_patch(mock_get_client, mock_fetch_issue):
 
     issue = update_issue_workflow(1, "patch")
     assert issue.id == 1, "expected issue.id to be 1"
-    assert issue.workflow == "patch", "expected workflow to be 'patch'"
+    assert issue.type == "patch", "expected type to be 'patch'"
 
 
 @patch("bleue.core.database.fetch_issue")
@@ -730,7 +730,7 @@ def test_update_issue_workflow_success_none(mock_get_client, mock_fetch_issue):
             "id": 1,
             "description": "Test issue",
             "status": "pending",
-            "workflow": None,
+            "type": None,
         }
     ]
     mock_eq.execute.return_value = mock_execute
@@ -738,7 +738,7 @@ def test_update_issue_workflow_success_none(mock_get_client, mock_fetch_issue):
 
     issue = update_issue_workflow(1, None)
     assert issue.id == 1, "expected issue.id to be 1"
-    assert issue.workflow is None, "expected workflow to be None"
+    assert issue.type is None, "expected type to be None"
 
 
 @patch("bleue.core.database.get_client")

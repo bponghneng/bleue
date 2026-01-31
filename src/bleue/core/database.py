@@ -502,7 +502,7 @@ def update_issue_workflow(issue_id: int, workflow: Optional[str]) -> CapeIssue:
     client = get_client()
 
     update_data: SupabaseRow = {
-        "workflow": workflow,
+        "type": workflow,
     }
 
     try:
