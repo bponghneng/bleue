@@ -12,7 +12,7 @@ from postgrest.exceptions import APIError
 from supabase import Client, create_client
 from supabase.lib.client_options import SyncClientOptions
 
-from bleue.core.models import CapeComment, CapeIssue
+from bleue.core.models import BleueComment, BleueIssue
 
 
 def _find_dotenv() -> Path | None:
@@ -109,7 +109,7 @@ def get_client() -> Client:
 # ============================================================================
 
 
-def fetch_issue(issue_id: int) -> CapeIssue:
+def fetch_issue(issue_id: int) -> BleueIssue:
     """Fetch issue from Supabase by ID."""
     client = get_client()
 
@@ -123,18 +123,18 @@ def fetch_issue(issue_id: int) -> CapeIssue:
         if response_data is None:
             raise ValueError(f"Issue with id {issue_id} not found")
 
-        return CapeIssue.from_supabase(response_data)
+        return BleueIssue.from_supabase(response_data)
 
     except APIError as e:
         logger.error(f"Database error fetching issue {issue_id}: {e}")
         raise ValueError(f"Failed to fetch issue {issue_id}: {e}") from e
 
 
-def fetch_all_issues() -> List[CapeIssue]:
+def fetch_all_issues() -> List[BleueIssue]:
     """Fetch all issues ordered by creation date (newest first).
 
     Returns:
-        List of CapeIssue objects. Returns empty list if no issues exist.
+        List of BleueIssue objects. Returns empty list if no issues exist.
 
     Raises:
         ValueError: If database operation fails.
@@ -148,7 +148,7 @@ def fetch_all_issues() -> List[CapeIssue]:
         if not rows:
             return []
 
-        return [CapeIssue.from_supabase(row) for row in rows]
+        return [BleueIssue.from_supabase(row) for row in rows]
 
     except APIError as e:
         logger.error(f"Database error fetching all issues: {e}")
@@ -160,8 +160,8 @@ def fetch_all_issues() -> List[CapeIssue]:
 # ============================================================================
 
 
-def create_comment(comment: CapeComment) -> CapeComment:
-    """Create a comment on an issue from a CapeComment payload."""
+def create_comment(comment: BleueComment) -> BleueComment:
+    """Create a comment on an issue from a comment payload."""
     client = get_client()
 
     comment_data: SupabaseRow = {
@@ -180,21 +180,21 @@ def create_comment(comment: CapeComment) -> CapeComment:
             raise ValueError("Comment creation returned no data")
 
         first_row = cast(SupabaseRow, rows[0])
-        return CapeComment(**first_row)
+        return BleueComment(**first_row)
 
     except APIError as e:
         logger.error("Database error creating comment on issue %s: %s", comment.issue_id, e)
         raise ValueError(f"Failed to create comment on issue {comment.issue_id}: {e}") from e
 
 
-def fetch_comments(issue_id: int) -> List[CapeComment]:
+def fetch_comments(issue_id: int) -> List[BleueComment]:
     """Fetch all comments for an issue in chronological order.
 
     Args:
         issue_id: The ID of the issue to fetch comments for.
 
     Returns:
-        List of CapeComment objects. Returns empty list if no comments exist.
+        List of BleueComment objects. Returns empty list if no comments exist.
 
     Raises:
         ValueError: If database operation fails.
@@ -214,15 +214,15 @@ def fetch_comments(issue_id: int) -> List[CapeComment]:
         if not rows:
             return []
 
-        return [CapeComment(**row) for row in rows]
+        return [BleueComment(**row) for row in rows]
 
     except APIError as e:
         logger.error(f"Database error fetching comments for issue {issue_id}: {e}")
         raise ValueError(f"Failed to fetch comments for issue {issue_id}: {e}") from e
 
 
-def create_issue(description: str, title: Optional[str] = None) -> CapeIssue:
-    """Create a new Cape issue with the given description.
+def create_issue(description: str, title: Optional[str] = None) -> BleueIssue:
+    """Create a new issue with the given description.
 
     Args:
         description: The issue description text. Will be trimmed of leading/trailing whitespace.
@@ -230,7 +230,7 @@ def create_issue(description: str, title: Optional[str] = None) -> CapeIssue:
         title: Optional title for the issue.
 
     Returns:
-        CapeIssue: The created issue with database-generated id and timestamps.
+        BleueIssue: The created issue with database-generated id and timestamps.
 
     Raises:
         ValueError: If description is empty after trimming, or if database operation fails.
@@ -266,14 +266,14 @@ def create_issue(description: str, title: Optional[str] = None) -> CapeIssue:
             raise ValueError("Issue creation returned no data")
 
         first_row = cast(SupabaseRow, rows[0])
-        return CapeIssue(**first_row)
+        return BleueIssue(**first_row)
 
     except APIError as e:
         logger.error(f"Database error creating issue: {e}")
         raise ValueError(f"Failed to create issue: {e}") from e
 
 
-def update_issue_status(issue_id: int, status: str) -> CapeIssue:
+def update_issue_status(issue_id: int, status: str) -> BleueIssue:
     """Update the status of an existing issue.
 
     Args:
@@ -281,7 +281,7 @@ def update_issue_status(issue_id: int, status: str) -> CapeIssue:
         status: The new status value. Must be one of: "pending", "started", "completed".
 
     Returns:
-        CapeIssue: The updated issue with new status and updated timestamp.
+        BleueIssue: The updated issue with new status and updated timestamp.
 
     Raises:
         ValueError: If status is invalid, issue not found, or database operation fails.
@@ -304,14 +304,14 @@ def update_issue_status(issue_id: int, status: str) -> CapeIssue:
             raise ValueError(f"Issue with id {issue_id} not found")
 
         first_row = cast(SupabaseRow, rows[0])
-        return CapeIssue(**first_row)
+        return BleueIssue(**first_row)
 
     except APIError as e:
         logger.error(f"Database error updating issue {issue_id} status: {e}")
         raise ValueError(f"Failed to update issue {issue_id} status: {e}") from e
 
 
-def update_issue_description(issue_id: int, description: str) -> CapeIssue:
+def update_issue_description(issue_id: int, description: str) -> BleueIssue:
     """Update the description of an existing issue.
 
     Args:
@@ -320,7 +320,7 @@ def update_issue_description(issue_id: int, description: str) -> CapeIssue:
                     Must be between 10 and 10000 characters after trimming.
 
     Returns:
-        CapeIssue: The updated issue with new description and updated timestamp.
+        BleueIssue: The updated issue with new description and updated timestamp.
 
     Raises:
         ValueError: If description is invalid, issue not found, or database operation fails.
@@ -350,7 +350,7 @@ def update_issue_description(issue_id: int, description: str) -> CapeIssue:
             raise ValueError(f"Issue with id {issue_id} not found")
 
         first_row = cast(SupabaseRow, rows[0])
-        return CapeIssue(**first_row)
+        return BleueIssue(**first_row)
 
     except APIError as e:
         logger.error(f"Database error updating issue {issue_id} description: {e}")
@@ -388,7 +388,7 @@ def delete_issue(issue_id: int) -> bool:
         raise ValueError(f"Failed to delete issue {issue_id}: {e}") from e
 
 
-def update_issue_assignment(issue_id: int, assigned_to: Optional[str]) -> CapeIssue:
+def update_issue_assignment(issue_id: int, assigned_to: Optional[str]) -> BleueIssue:
     """Update the worker assignment of an existing issue.
 
     Args:
@@ -399,7 +399,7 @@ def update_issue_assignment(issue_id: int, assigned_to: Optional[str]) -> CapeIs
                     "local-3", "xwing-1", "xwing-2", "xwing-3".
 
     Returns:
-        CapeIssue: The updated issue with new assignment and updated timestamp.
+        BleueIssue: The updated issue with new assignment and updated timestamp.
 
     Raises:
         ValueError: If assigned_to is invalid, issue not found, issue is not pending,
@@ -457,7 +457,7 @@ def update_issue_assignment(issue_id: int, assigned_to: Optional[str]) -> CapeIs
             raise ValueError(f"Issue with id {issue_id} not found")
 
         first_row = cast(SupabaseRow, rows[0])
-        return CapeIssue(**first_row)
+        return BleueIssue(**first_row)
 
     except APIError as e:
         logger.error(f"Database error updating issue {issue_id} assignment: {e}")
