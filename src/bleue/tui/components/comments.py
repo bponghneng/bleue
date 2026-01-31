@@ -6,7 +6,7 @@ from textual.app import ComposeResult
 from textual.containers import Container
 from textual.widgets import Static
 
-from bleue.core.models import CapeComment
+from bleue.core.models import BleueComment
 from bleue.tui.components.comment_item import create_comment_widget
 
 
@@ -22,11 +22,11 @@ class Comments(Container):
         """Compose the comments container layout."""
         yield Container(id="comments-container")
 
-    def update_comments(self, comments: List[CapeComment]) -> None:
+    def update_comments(self, comments: List[BleueComment]) -> None:
         """Update the displayed comments.
 
         Args:
-            comments: List of CapeComment objects to display
+            comments: List of BleueComment objects to display
         """
         container = self.query_one("#comments-container", Container)
         container.remove_children()

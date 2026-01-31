@@ -21,7 +21,7 @@ from bleue.core.database import (
     fetch_all_issues,
     update_issue_assignment,
 )
-from bleue.core.models import CapeIssue
+from bleue.core.models import BleueIssue
 from bleue.tui.screens.confirm_delete_modal import ConfirmDeleteModal
 from bleue.tui.screens.create_issue_modal import CreateIssueModal
 from bleue.tui.screens.help_modal import HelpModal
@@ -85,7 +85,7 @@ class IssueListScreen(Screen):
         except Exception as e:
             self.app.call_from_thread(self.notify, f"Error loading issues: {e}", severity="error")
 
-    def _populate_table(self, issues: List[CapeIssue]) -> None:
+    def _populate_table(self, issues: List[BleueIssue]) -> None:
         """Populate the DataTable with issue data."""
         table = self.query_one(DataTable)
         table.clear()
@@ -260,7 +260,7 @@ class IssueListScreen(Screen):
         except Exception as e:
             self.app.call_from_thread(self.notify, f"Error assigning worker: {e}", severity="error")
 
-    def _update_assignment_success(self, updated_issue: CapeIssue) -> None:
+    def _update_assignment_success(self, updated_issue: BleueIssue) -> None:
         """Update table row after successful assignment and show notification.
 
         Args:
