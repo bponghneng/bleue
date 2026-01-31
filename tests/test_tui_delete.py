@@ -4,7 +4,7 @@ from unittest.mock import Mock
 
 import pytest
 
-from bleue.core.models import CapeIssue
+from bleue.core.models import BleueIssue
 from bleue.tui.screens.confirm_delete_modal import ConfirmDeleteModal
 from bleue.tui.screens.issue_detail_screen import IssueDetailScreen
 from bleue.tui.screens.issue_list_screen import IssueListScreen
@@ -12,8 +12,8 @@ from bleue.tui.screens.issue_list_screen import IssueListScreen
 
 @pytest.fixture
 def mock_issue():
-    """Create a mock CapeIssue for testing."""
-    return CapeIssue(
+    """Create a mock BleueIssue for testing."""
+    return BleueIssue(
         id=1,
         description="Test issue for deletion",
         status="pending",
@@ -22,8 +22,8 @@ def mock_issue():
 
 @pytest.fixture
 def mock_started_issue():
-    """Create a mock CapeIssue with started status."""
-    return CapeIssue(
+    """Create a mock BleueIssue with started status."""
+    return BleueIssue(
         id=2,
         description="Started issue that should not be deleted",
         status="started",

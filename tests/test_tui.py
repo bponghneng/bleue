@@ -5,7 +5,7 @@ from unittest.mock import Mock, PropertyMock, patch
 
 import pytest
 
-from bleue.core.models import CapeComment, CapeIssue
+from bleue.core.models import BleueComment, BleueIssue
 from bleue.tui.components.comments import Comments
 from bleue.tui.components.issue_form import IssueForm
 from bleue.tui.screens.issue_detail_screen import IssueDetailScreen
@@ -14,7 +14,7 @@ from bleue.tui.screens.issue_detail_screen import IssueDetailScreen
 @pytest.fixture
 def mock_issue_started():
     """Create a mock issue with 'started' status."""
-    return CapeIssue(
+    return BleueIssue(
         id=1,
         description="Test issue with started status",
         status="started",
@@ -26,7 +26,7 @@ def mock_issue_started():
 @pytest.fixture
 def mock_issue_pending():
     """Create a mock issue with 'pending' status."""
-    return CapeIssue(
+    return BleueIssue(
         id=2,
         description="Test issue with pending status",
         status="pending",
@@ -38,7 +38,7 @@ def mock_issue_pending():
 @pytest.fixture
 def mock_issue_completed():
     """Create a mock issue with 'completed' status."""
-    return CapeIssue(
+    return BleueIssue(
         id=3,
         description="Test issue with completed status",
         status="completed",
@@ -51,13 +51,13 @@ def mock_issue_completed():
 def mock_comments():
     """Create mock comments."""
     return [
-        CapeComment(
+        BleueComment(
             id=1,
             issue_id=1,
             comment="First comment",
             created_at=datetime(2024, 1, 1, 12, 10, 0),
         ),
-        CapeComment(
+        BleueComment(
             id=2,
             issue_id=1,
             comment="Second comment",
@@ -376,7 +376,7 @@ def test_comment_item_factory_agent_claude():
         create_comment_widget,
     )
 
-    comment = CapeComment(
+    comment = BleueComment(
         id=1,
         issue_id=1,
         comment="Claude comment",
@@ -397,7 +397,7 @@ def test_comment_item_factory_system_workflow():
         create_comment_widget,
     )
 
-    comment = CapeComment(
+    comment = BleueComment(
         id=1,
         issue_id=1,
         comment="Workflow event",
@@ -415,7 +415,7 @@ def test_comment_item_stores_comment():
     """Test CommentItem stores the comment reference."""
     from bleue.tui.components.comment_item import CommentItem
 
-    comment = CapeComment(
+    comment = BleueComment(
         id=1,
         issue_id=1,
         comment="Test comment",
@@ -431,7 +431,7 @@ def test_agent_claude_comment_text_layout():
     """Test AgentClaudeComment with raw.type='text' layout."""
     from bleue.tui.components.comment_item import AgentClaudeComment
 
-    comment = CapeComment(
+    comment = BleueComment(
         id=1,
         issue_id=1,
         comment="Fallback text",
@@ -455,7 +455,7 @@ def test_agent_claude_comment_tool_use_layout():
     """
     from bleue.tui.components.comment_item import AgentClaudeComment
 
-    comment = CapeComment(
+    comment = BleueComment(
         id=1,
         issue_id=1,
         comment="Fallback text",
@@ -490,7 +490,7 @@ def test_agent_claude_comment_task_tool_layout():
     """Test AgentClaudeComment with raw.type='tool_use' and name='Task' layout."""
     from bleue.tui.components.comment_item import AgentClaudeComment
 
-    comment = CapeComment(
+    comment = BleueComment(
         id=1,
         issue_id=1,
         comment="Fallback text",
@@ -535,7 +535,7 @@ def test_agent_claude_comment_fallback_layout():
     """Test AgentClaudeComment falls back to comment body when raw.type is unknown."""
     from bleue.tui.components.comment_item import AgentClaudeComment
 
-    comment = CapeComment(
+    comment = BleueComment(
         id=1,
         issue_id=1,
         comment="This should be displayed",
@@ -560,7 +560,7 @@ def test_agent_claude_comment_unknown_tool_fallback():
     from bleue.tui.components.comment_item import AgentClaudeComment
 
     fallback_text = "Fallback description for unknown tool"
-    comment = CapeComment(
+    comment = BleueComment(
         id=1,
         issue_id=1,
         comment=fallback_text,
