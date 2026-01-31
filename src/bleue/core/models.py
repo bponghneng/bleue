@@ -1,4 +1,4 @@
-"""Data types for Cape TUI components."""
+"""Data types for Bleue TUI components."""
 
 from datetime import datetime
 from typing import Literal, Optional
@@ -6,8 +6,8 @@ from typing import Literal, Optional
 from pydantic import BaseModel, Field, field_validator
 
 
-class CapeIssue(BaseModel):
-    """Cape issue model matching Supabase schema."""
+class BleueIssue(BaseModel):
+    """Bleue issue model matching Supabase schema."""
 
     id: int
     title: Optional[str] = None
@@ -48,13 +48,13 @@ class CapeIssue(BaseModel):
         return v if v else "pending"
 
     @classmethod
-    def from_supabase(cls, row: dict) -> "CapeIssue":
-        """Create CapeIssue from Supabase row."""
+    def from_supabase(cls, row: dict) -> "BleueIssue":
+        """Create a BleueIssue from a Supabase row."""
         return cls(**row)
 
 
-class CapeComment(BaseModel):
-    """Cape comment model matching Supabase schema."""
+class BleueComment(BaseModel):
+    """Bleue comment model matching Supabase schema."""
 
     id: Optional[int] = None
     issue_id: int
