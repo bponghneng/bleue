@@ -16,7 +16,7 @@ from textual.widgets import (
 )
 
 from bleue.core.database import delete_issue, fetch_comments, fetch_issue
-from bleue.core.models import CapeComment, CapeIssue
+from bleue.core.models import BleueComment, BleueIssue
 from bleue.tui.components.comments import Comments
 from bleue.tui.screens.confirm_delete_modal import ConfirmDeleteModal
 from bleue.tui.screens.edit_description_modal import EditDescriptionModal
@@ -35,8 +35,8 @@ class IssueDetailScreen(Screen):
     ]
 
     issue_id: int
-    issue: reactive[Optional[CapeIssue]] = reactive(None)
-    comments: reactive[List[CapeComment]] = reactive([])
+    issue: reactive[Optional[BleueIssue]] = reactive(None)
+    comments: reactive[List[BleueComment]] = reactive([])
     loading: reactive[bool] = reactive(False)
     auto_refresh_active: reactive[bool] = reactive(False)
     refresh_timer: Optional[Timer] = None
@@ -137,7 +137,7 @@ class IssueDetailScreen(Screen):
             # Ignore errors if widget is not yet mounted or doesn't exist
             pass
 
-    def _display_data(self, issue: CapeIssue, comments: List[CapeComment]) -> None:
+    def _display_data(self, issue: BleueIssue, comments: List[BleueComment]) -> None:
         """Display issue and comments data with conditional comments visibility.
 
         Args:

@@ -8,7 +8,7 @@ from textual.containers import Container, Horizontal
 from textual.widgets import Collapsible, Pretty, Static
 
 if TYPE_CHECKING:
-    from bleue.core.models import CapeComment
+    from bleue.core.models import BleueComment
 
 
 def _parse_raw(raw: Any) -> dict:
@@ -67,11 +67,11 @@ class CommentItem(Container):
     # CSS class for styling - override in subclasses
     DEFAULT_CLASSES = "comment-item"
 
-    def __init__(self, comment: "CapeComment", **kwargs):
+    def __init__(self, comment: "BleueComment", **kwargs):
         """Initialize the comment item.
 
         Args:
-            comment: The CapeComment to render
+            comment: The BleueComment to render
             **kwargs: Additional arguments passed to Container
         """
         # Merge subclass classes with any passed in kwargs
@@ -232,11 +232,11 @@ _COMMENT_TYPE_MAP: dict[tuple[str | None, str | None], type[CommentItem]] = {
 }
 
 
-def create_comment_widget(comment: "CapeComment") -> CommentItem:
+def create_comment_widget(comment: "BleueComment") -> CommentItem:
     """Factory to create appropriate comment widget based on source and type.
 
     Args:
-        comment: The CapeComment to create a widget for
+        comment: The BleueComment to create a widget for
 
     Returns:
         A CommentItem subclass instance appropriate for the comment type
