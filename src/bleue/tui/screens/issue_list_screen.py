@@ -268,15 +268,22 @@ class IssueListScreen(Screen):
             logger.warning(f"Failed to fetch current workflow for issue {issue_id}: {e}")
             current_workflow = None
 
-        # Show modal on main thread
-        callback = partial(self.handle_workflow_selection, issue_id)
-        self.app.call_from_thread(
-            self.app.push_screen, WorkflowSelectModal(current_workflow), callback
-        )
+        # Show modal on main thread - defer modal creation to main thread
+        self.app.call_from_thread(self._push_workflow_modal, current_workflow, issue_id)
 
     def action_refresh(self) -> None:
         """Refresh the issue list."""
         self.load_issues()
+
+    def _push_workflow_modal(self, current_workflow: Optional[str], issue_id: int) -> None:
+        """Push workflow selection modal on main thread.
+
+        Args:
+            current_workflow: The current workflow value.
+            issue_id: The ID of the issue to update.
+        """
+        callback = partial(self.handle_workflow_selection, issue_id)
+        self.app.push_screen(WorkflowSelectModal(current_workflow), callback)
 
     def handle_workflow_selection(self, issue_id: int, selection: WorkflowSelection) -> None:
         """Handle the result of workflow selection modal.
