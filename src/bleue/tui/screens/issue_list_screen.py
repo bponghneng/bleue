@@ -1,6 +1,6 @@
 import logging
 from functools import partial
-from typing import List, Literal, Optional
+from typing import Literal, Optional
 
 from textual import work
 from textual.app import ComposeResult
@@ -91,7 +91,7 @@ class IssueListScreen(Screen):
         except Exception as e:
             self.app.call_from_thread(self.notify, f"Error loading issues: {e}", severity="error")
 
-    def _populate_table(self, issues: List[BleueIssue]) -> None:
+    def _populate_table(self, issues: list[BleueIssue]) -> None:
         """Populate the DataTable with issue data."""
         table = self.query_one(DataTable)
         table.clear()

@@ -4,7 +4,7 @@ import logging
 import os
 from functools import lru_cache
 from pathlib import Path
-from typing import Any, Dict, List, Literal, Optional, cast
+from typing import Any, Literal, Optional, cast
 
 import httpx
 from dotenv import load_dotenv
@@ -30,8 +30,8 @@ load_dotenv(dotenv_path=_find_dotenv())
 
 logger = logging.getLogger(__name__)
 
-SupabaseRow = Dict[str, Any]
-SupabaseRows = List[SupabaseRow]
+SupabaseRow = dict[str, Any]
+SupabaseRows = list[SupabaseRow]
 
 # ============================================================================
 # Configuration
@@ -130,7 +130,7 @@ def fetch_issue(issue_id: int) -> BleueIssue:
         raise ValueError(f"Failed to fetch issue {issue_id}: {e}") from e
 
 
-def fetch_all_issues() -> List[BleueIssue]:
+def fetch_all_issues() -> list[BleueIssue]:
     """Fetch all issues ordered by creation date (newest first).
 
     Returns:
@@ -187,7 +187,7 @@ def create_comment(comment: BleueComment) -> BleueComment:
         raise ValueError(f"Failed to create comment on issue {comment.issue_id}: {e}") from e
 
 
-def fetch_comments(issue_id: int) -> List[BleueComment]:
+def fetch_comments(issue_id: int) -> list[BleueComment]:
     """Fetch all comments for an issue in chronological order.
 
     Args:
@@ -503,5 +503,5 @@ def update_issue_workflow(
         return BleueIssue(**first_row)
 
     except APIError as e:
-        logger.error(f"Database error updating issue {issue_id} workflow: {e}")
-        raise ValueError(f"Failed to update issue {issue_id} workflow: {e}") from e
+        logger.exception("Database error updating issue %s workflow", issue_id)
+        raise ValueError("Failed to update issue {} workflow: {}".format(issue_id, e)) from e
