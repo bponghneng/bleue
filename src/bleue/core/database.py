@@ -464,7 +464,9 @@ def update_issue_assignment(issue_id: int, assigned_to: Optional[str]) -> BleueI
         raise ValueError(f"Failed to update issue {issue_id} assignment: {e}") from e
 
 
-def update_issue_workflow(issue_id: int, workflow: Optional[Literal["main", "patch"]]) -> CapeIssue:
+def update_issue_workflow(
+    issue_id: int, workflow: Optional[Literal["main", "patch"]]
+) -> BleueIssue:
     """Update the workflow type of an existing issue.
 
     Args:
@@ -472,7 +474,7 @@ def update_issue_workflow(issue_id: int, workflow: Optional[Literal["main", "pat
         workflow: The workflow type to set. Must be one of: None, "main", "patch".
 
     Returns:
-        CapeIssue: The updated issue with new type and updated timestamp.
+        BleueIssue: The updated issue with new type and updated timestamp.
 
     Raises:
         ValueError: If workflow is invalid, issue not found, or database operation fails.
@@ -498,7 +500,7 @@ def update_issue_workflow(issue_id: int, workflow: Optional[Literal["main", "pat
             raise ValueError(f"Issue with id {issue_id} not found")
 
         first_row = cast(SupabaseRow, rows[0])
-        return CapeIssue(**first_row)
+        return BleueIssue(**first_row)
 
     except APIError as e:
         logger.error(f"Database error updating issue {issue_id} workflow: {e}")
