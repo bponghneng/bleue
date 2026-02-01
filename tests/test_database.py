@@ -107,6 +107,238 @@ def test_create_issue_whitespace_only(_mock_get_client) -> None:
 
 
 @patch("bleue.core.database.get_client")
+def test_create_issue_with_workflow_main(mock_get_client) -> None:
+    """Test creating issue with workflow set to 'main'."""
+    mock_client = Mock()
+    mock_table = Mock()
+    mock_insert = Mock()
+    mock_execute = Mock()
+
+    mock_client.table.return_value = mock_table
+    mock_table.insert.return_value = mock_insert
+    mock_execute.data = [
+        {"id": 1, "description": "Test issue", "status": "pending", "type": "main"}
+    ]
+    mock_insert.execute.return_value = mock_execute
+    mock_get_client.return_value = mock_client
+
+    issue = create_issue("Test issue description text", workflow="main")
+    assert issue.id == 1
+    assert issue.type == "main"
+
+    # Verify the insert payload includes the type field
+    insert_data = mock_table.insert.call_args.args[0]
+    assert insert_data["type"] == "main"
+
+
+@patch("bleue.core.database.get_client")
+def test_create_issue_with_workflow_patch(mock_get_client) -> None:
+    """Test creating issue with workflow set to 'patch'."""
+    mock_client = Mock()
+    mock_table = Mock()
+    mock_insert = Mock()
+    mock_execute = Mock()
+
+    mock_client.table.return_value = mock_table
+    mock_table.insert.return_value = mock_insert
+    mock_execute.data = [
+        {"id": 1, "description": "Test issue", "status": "pending", "type": "patch"}
+    ]
+    mock_insert.execute.return_value = mock_execute
+    mock_get_client.return_value = mock_client
+
+    issue = create_issue("Test issue description text", workflow="patch")
+    assert issue.id == 1
+    assert issue.type == "patch"
+
+    insert_data = mock_table.insert.call_args.args[0]
+    assert insert_data["type"] == "patch"
+
+
+@patch("bleue.core.database.get_client")
+def test_create_issue_with_workflow_none(mock_get_client) -> None:
+    """Test creating issue with workflow set to None (default)."""
+    mock_client = Mock()
+    mock_table = Mock()
+    mock_insert = Mock()
+    mock_execute = Mock()
+
+    mock_client.table.return_value = mock_table
+    mock_table.insert.return_value = mock_insert
+    mock_execute.data = [{"id": 1, "description": "Test issue", "status": "pending"}]
+    mock_insert.execute.return_value = mock_execute
+    mock_get_client.return_value = mock_client
+
+    issue = create_issue("Test issue description text", workflow=None)
+    assert issue.id == 1
+
+    # Verify the insert payload does NOT include the type field when workflow is None
+    insert_data = mock_table.insert.call_args.args[0]
+    assert "type" not in insert_data
+
+
+@patch("bleue.core.database.get_client")
+def test_create_issue_with_invalid_workflow(_mock_get_client) -> None:
+    """Test creating issue with invalid workflow value raises ValueError."""
+    with pytest.raises(ValueError, match="Invalid workflow"):
+        create_issue("Test issue description text", workflow="invalid")
+
+
+@patch("bleue.core.database.get_client")
+def test_create_issue_with_worker(mock_get_client) -> None:
+    """Test creating issue with a valid worker assignment."""
+    mock_client = Mock()
+    mock_table = Mock()
+    mock_insert = Mock()
+    mock_execute = Mock()
+
+    mock_client.table.return_value = mock_table
+    mock_table.insert.return_value = mock_insert
+    mock_execute.data = [
+        {
+            "id": 1,
+            "description": "Test issue",
+            "status": "pending",
+            "assigned_to": "executor-1",
+        }
+    ]
+    mock_insert.execute.return_value = mock_execute
+    mock_get_client.return_value = mock_client
+
+    issue = create_issue("Test issue description text", assigned_to="executor-1")
+    assert issue.id == 1
+    assert issue.assigned_to == "executor-1"
+
+    insert_data = mock_table.insert.call_args.args[0]
+    assert insert_data["assigned_to"] == "executor-1"
+
+
+@patch("bleue.core.database.get_client")
+def test_create_issue_with_worker_none(mock_get_client) -> None:
+    """Test creating issue with worker set to None (default)."""
+    mock_client = Mock()
+    mock_table = Mock()
+    mock_insert = Mock()
+    mock_execute = Mock()
+
+    mock_client.table.return_value = mock_table
+    mock_table.insert.return_value = mock_insert
+    mock_execute.data = [{"id": 1, "description": "Test issue", "status": "pending"}]
+    mock_insert.execute.return_value = mock_execute
+    mock_get_client.return_value = mock_client
+
+    issue = create_issue("Test issue description text", assigned_to=None)
+    assert issue.id == 1
+
+    # Verify the insert payload does NOT include assigned_to when it is None
+    insert_data = mock_table.insert.call_args.args[0]
+    assert "assigned_to" not in insert_data
+
+
+@patch("bleue.core.database.get_client")
+def test_create_issue_with_invalid_worker(_mock_get_client) -> None:
+    """Test creating issue with invalid worker ID raises ValueError."""
+    with pytest.raises(ValueError, match="Invalid worker ID"):
+        create_issue("Test issue description text", assigned_to="invalid-worker")
+
+
+@patch("bleue.core.database.get_client")
+def test_create_issue_with_workflow_and_worker(mock_get_client) -> None:
+    """Test creating issue with both workflow and worker parameters."""
+    mock_client = Mock()
+    mock_table = Mock()
+    mock_insert = Mock()
+    mock_execute = Mock()
+
+    mock_client.table.return_value = mock_table
+    mock_table.insert.return_value = mock_insert
+    mock_execute.data = [
+        {
+            "id": 1,
+            "description": "Test issue",
+            "status": "pending",
+            "type": "main",
+            "assigned_to": "xwing-2",
+        }
+    ]
+    mock_insert.execute.return_value = mock_execute
+    mock_get_client.return_value = mock_client
+
+    issue = create_issue(
+        "Test issue description text", workflow="main", assigned_to="xwing-2"
+    )
+    assert issue.id == 1
+    assert issue.type == "main"
+    assert issue.assigned_to == "xwing-2"
+
+    insert_data = mock_table.insert.call_args.args[0]
+    assert insert_data["type"] == "main"
+    assert insert_data["assigned_to"] == "xwing-2"
+
+
+@patch("bleue.core.database.get_client")
+def test_create_issue_with_all_valid_workers(mock_get_client) -> None:
+    """Test creating issue with each valid worker ID."""
+    mock_client = Mock()
+    mock_table = Mock()
+    mock_insert = Mock()
+    mock_execute = Mock()
+
+    mock_client.table.return_value = mock_table
+    mock_table.insert.return_value = mock_insert
+    mock_get_client.return_value = mock_client
+
+    valid_worker_ids = [
+        "alleycat-1",
+        "alleycat-2",
+        "alleycat-3",
+        "executor-1",
+        "executor-2",
+        "executor-3",
+        "local-1",
+        "local-2",
+        "local-3",
+        "tydirium-1",
+        "tydirium-2",
+        "tydirium-3",
+        "xwing-1",
+        "xwing-2",
+        "xwing-3",
+    ]
+
+    for worker_id in valid_worker_ids:
+        mock_execute.data = [
+            {
+                "id": 1,
+                "description": "Test issue",
+                "status": "pending",
+                "assigned_to": worker_id,
+            }
+        ]
+        mock_insert.execute.return_value = mock_execute
+
+        issue = create_issue("Test issue description text", assigned_to=worker_id)
+        assert issue.assigned_to == worker_id
+
+
+@patch("bleue.core.database.get_client")
+def test_create_issue_rejects_invalid_worker_ids(_mock_get_client) -> None:
+    """Test that create_issue rejects invalid worker IDs."""
+    invalid_workers = [
+        "alleycat-4",
+        "executor-4",
+        "local-4",
+        "xwing-4",
+        "hailmary-1",
+        "unknown-1",
+    ]
+
+    for worker_id in invalid_workers:
+        with pytest.raises(ValueError, match="Invalid worker ID"):
+            create_issue("Test issue description text", assigned_to=worker_id)
+
+
+@patch("bleue.core.database.get_client")
 def test_fetch_issue_success(mock_get_client) -> None:
     """Test successful issue fetch."""
     mock_client = Mock()
