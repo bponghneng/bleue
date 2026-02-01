@@ -77,9 +77,10 @@ class IssueListScreen(Screen):
         table = self.query_one(DataTable)
         table.cursor_type = "row"
         table.add_column("ID")
-        table.add_column("Title", width=50)
-        table.add_column("Status")
+        table.add_column("Title", width=35)
+        table.add_column("Workflow", width=12)
         table.add_column("Worker")
+        table.add_column("Status")
         self.load_issues()
 
     @work(exclusive=True, thread=True)
@@ -102,12 +103,14 @@ class IssueListScreen(Screen):
 
         for issue in issues:
             assigned = get_worker_display_name(issue.assigned_to) or "None"
+            workflow = issue.type.title() if issue.type else "None"
 
             table.add_row(
                 str(issue.id),
                 issue.title,
-                issue.status,
+                workflow,
                 assigned,
+                issue.status,
                 height=3,
                 key=str(issue.id),
             )
@@ -138,7 +141,7 @@ class IssueListScreen(Screen):
         row_data = table.get_row_at(table.cursor_row)
         issue_id = int(row_data[0])
         issue_title = str(row_data[1])
-        issue_status = str(row_data[2])
+        issue_status = str(row_data[4])
         base_status = issue_status.split()[0] if issue_status else ""
         coordinate = Coordinate(row=table.cursor_row, column=0)
         row_key = table.coordinate_to_cell_key(coordinate).row_key
@@ -207,7 +210,7 @@ class IssueListScreen(Screen):
         # Get issue data from the table row
         row_data = table.get_row_at(table.cursor_row)
         issue_id = int(row_data[0])
-        issue_status = str(row_data[2])
+        issue_status = str(row_data[4])
         base_status = issue_status.split()[0] if issue_status else ""
 
         # Only allow assignment for pending issues
@@ -240,7 +243,7 @@ class IssueListScreen(Screen):
         # Get issue data from the table row
         row_data = table.get_row_at(table.cursor_row)
         issue_id = int(row_data[0])
-        issue_status = str(row_data[2])
+        issue_status = str(row_data[4])
         base_status = issue_status.split()[0] if issue_status else ""
 
         # Only allow workflow selection for pending issues
@@ -322,7 +325,22 @@ class IssueListScreen(Screen):
         Args:
             updated_issue: The updated issue with new workflow.
         """
-        workflow_display = updated_issue.type or "None"
+        workflow_display = updated_issue.type.title() if updated_issue.type else "None"
+
+        # Find and update the workflow column in the table
+        table = self.query_one(DataTable)
+        issue_key = str(updated_issue.id)
+        try:
+            for row_index in range(len(table.rows)):
+                row_data = table.get_row_at(row_index)
+                if str(row_data[0]) == issue_key:
+                    # Update the workflow column (index 2)
+                    table.update_cell_at(Coordinate(row=row_index, column=2), workflow_display)
+                    break
+        except Exception as e:
+            logger.error(f"Error updating table after workflow change: {e}")
+            self.load_issues()
+
         if updated_issue.type:
             msg = f"Issue #{updated_issue.id} workflow set to {workflow_display}"
         else:
