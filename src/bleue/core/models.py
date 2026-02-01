@@ -33,7 +33,6 @@ class BleueIssue(BaseModel):
             "xwing-3",
         ]
     ] = None
-    type: Optional[Literal["main", "patch"]] = None
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
 

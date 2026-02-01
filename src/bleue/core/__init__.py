@@ -2,11 +2,11 @@
 
 from . import database, models
 from .database import SupabaseConfig
-from .models import CapeComment, CapeIssue
+from .models import BleueComment, BleueIssue
 
 __all__ = [
-    "CapeComment",
-    "CapeIssue",
+    "BleueComment",
+    "BleueIssue",
     "SupabaseConfig",
     "database",
     "models",
