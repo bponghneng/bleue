@@ -221,19 +221,29 @@ def fetch_comments(issue_id: int) -> list[BleueComment]:
         raise ValueError(f"Failed to fetch comments for issue {issue_id}: {e}") from e
 
 
-def create_issue(description: str, title: Optional[str] = None) -> BleueIssue:
+def create_issue(
+    description: str,
+    title: Optional[str] = None,
+    workflow: Optional[Literal["main", "patch"]] = None,
+    assigned_to: Optional[str] = None,
+) -> BleueIssue:
     """Create a new issue with the given description.
 
     Args:
         description: The issue description text. Will be trimmed of leading/trailing whitespace.
                     Must not be empty after trimming.
         title: Optional title for the issue.
+        workflow: Optional workflow type. Must be None, "main", or "patch".
+                 Maps to the ``type`` field in the database.
+        assigned_to: Optional worker ID to assign. Must be None or a valid worker ID
+                    (e.g. "alleycat-1", "executor-2", "local-3", "tydirium-1", "xwing-2").
 
     Returns:
         BleueIssue: The created issue with database-generated id and timestamps.
 
     Raises:
-        ValueError: If description is empty after trimming, or if database operation fails.
+        ValueError: If description is empty after trimming, workflow is invalid,
+                   assigned_to is invalid, or if database operation fails.
     """
     description_clean = description.strip()
 
@@ -244,6 +254,39 @@ def create_issue(description: str, title: Optional[str] = None) -> BleueIssue:
 
     if description_length < 10 or description_length > 10000:
         raise ValueError("Issue description must be between 10 and 10000 characters")
+
+    # Validate workflow parameter
+    valid_workflows = [None, "main", "patch"]
+    if workflow not in valid_workflows:
+        raise ValueError(
+            f"Invalid workflow '{workflow}'. Must be one of: "
+            f"{', '.join(repr(w) for w in valid_workflows)}"
+        )
+
+    # Validate assigned_to parameter
+    valid_workers = [
+        None,
+        "alleycat-1",
+        "alleycat-2",
+        "alleycat-3",
+        "executor-1",
+        "executor-2",
+        "executor-3",
+        "local-1",
+        "local-2",
+        "local-3",
+        "tydirium-1",
+        "tydirium-2",
+        "tydirium-3",
+        "xwing-1",
+        "xwing-2",
+        "xwing-3",
+    ]
+    if assigned_to not in valid_workers:
+        raise ValueError(
+            f"Invalid worker ID '{assigned_to}'. Must be one of: "
+            f"{', '.join(repr(w) for w in valid_workers)}"
+        )
 
     client = get_client()
 
@@ -257,6 +300,12 @@ def create_issue(description: str, title: Optional[str] = None) -> BleueIssue:
         if len(title_clean) > 255:
             raise ValueError("Issue title cannot exceed 255 characters")
         issue_data["title"] = title_clean
+
+    if workflow is not None:
+        issue_data["type"] = workflow
+
+    if assigned_to is not None:
+        issue_data["assigned_to"] = assigned_to
 
     try:
         response = client.table("issues").insert(issue_data).execute()
