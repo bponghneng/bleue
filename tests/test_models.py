@@ -46,33 +46,33 @@ def test_bleue_issue_from_supabase() -> None:
     assert issue.description == "Test issue"
 
 
-def test_cape_issue_type_default_none():
-    """Test that CapeIssue type defaults to None."""
-    issue = CapeIssue(id=1, description="Test issue")
+def test_bleue_issue_type_default_none():
+    """Test that BleueIssue type defaults to None."""
+    issue = BleueIssue(id=1, description="Test issue")
     assert issue.type is None
 
 
-def test_cape_issue_type_main():
-    """Test CapeIssue accepts type='main'."""
-    issue = CapeIssue(id=1, description="Test issue", type="main")
+def test_bleue_issue_type_main():
+    """Test BleueIssue accepts type='main'."""
+    issue = BleueIssue(id=1, description="Test issue", type="main")
     assert issue.type == "main"
 
 
-def test_cape_issue_type_patch():
-    """Test CapeIssue accepts type='patch'."""
-    issue = CapeIssue(id=1, description="Test issue", type="patch")
+def test_bleue_issue_type_patch():
+    """Test BleueIssue accepts type='patch'."""
+    issue = BleueIssue(id=1, description="Test issue", type="patch")
     assert issue.type == "patch"
 
 
-def test_cape_issue_type_invalid():
-    """Test that CapeIssue rejects invalid type values."""
+def test_bleue_issue_type_invalid():
+    """Test that BleueIssue rejects invalid type values."""
     with pytest.raises(ValueError):
-        CapeIssue(id=1, description="Test issue", type="invalid")
+        BleueIssue(id=1, description="Test issue", type="invalid")
 
 
-def test_cape_comment_creation():
-    """Test basic CapeComment creation."""
-    comment = CapeComment(issue_id=1, comment="Test comment")
+def test_bleue_comment_creation():
+    """Test basic BleueComment creation."""
+    comment = BleueComment(issue_id=1, comment="Test comment")
     assert comment.issue_id == 1
     assert comment.comment == "Test comment"
     assert comment.id is None
