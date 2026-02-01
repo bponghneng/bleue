@@ -67,7 +67,7 @@ class CommentItem(Container):
     # CSS class for styling - override in subclasses
     DEFAULT_CLASSES = "comment-item"
 
-    def __init__(self, comment: "BleueComment", **kwargs):
+    def __init__(self, comment: "BleueComment", **kwargs: Any) -> None:
         """Initialize the comment item.
 
         Args:
