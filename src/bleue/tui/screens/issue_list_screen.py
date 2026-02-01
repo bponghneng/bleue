@@ -1,6 +1,6 @@
 import logging
 from functools import partial
-from typing import List, Optional
+from typing import List, Literal, Optional
 
 from textual import work
 from textual.app import ComposeResult
@@ -300,7 +300,9 @@ class IssueListScreen(Screen):
         self.set_workflow_handler(issue_id, selection.value)
 
     @work(exclusive=True, thread=True)
-    def set_workflow_handler(self, issue_id: int, workflow: Optional[str]) -> None:
+    def set_workflow_handler(
+        self, issue_id: int, workflow: Optional[Literal["main", "patch"]]
+    ) -> None:
         """Set workflow on issue in background thread.
 
         Args:
@@ -314,7 +316,7 @@ class IssueListScreen(Screen):
         except Exception as e:
             self.app.call_from_thread(self.notify, f"Error setting workflow: {e}", severity="error")
 
-    def _update_workflow_success(self, updated_issue: CapeIssue) -> None:
+    def _update_workflow_success(self, updated_issue: BleueIssue) -> None:
         """Show notification after successful workflow update.
 
         Args:
