@@ -436,28 +436,10 @@ def update_issue_assignment(issue_id: int, assigned_to: Optional[str]) -> BleueI
                    or database operation fails.
     """
     # Validate assigned_to parameter
-    valid_workers = [
-        None,
-        "alleycat-1",
-        "alleycat-2",
-        "alleycat-3",
-        "executor-1",
-        "executor-2",
-        "executor-3",
-        "local-1",
-        "local-2",
-        "local-3",
-        "tydirium-1",
-        "tydirium-2",
-        "tydirium-3",
-        "xwing-1",
-        "xwing-2",
-        "xwing-3",
-    ]
-    if assigned_to not in valid_workers:
+    if assigned_to not in WORKER_IDS:
         raise ValueError(
             f"Invalid worker ID '{assigned_to}'. Must be one of: "
-            f"{', '.join(repr(w) for w in valid_workers)}"
+            f"{', '.join(repr(w) for w in WORKER_IDS)}"
         )
 
     # First, fetch the issue to check its status
@@ -509,11 +491,10 @@ def update_issue_workflow(
     Raises:
         ValueError: If workflow is invalid, issue not found, or database operation fails.
     """
-    valid_workflows = [None, "main", "patch"]
-    if workflow not in valid_workflows:
+    if workflow not in WORKFLOW_VALUES:
         raise ValueError(
             f"Invalid workflow '{workflow}'. Must be one of: "
-            f"{', '.join(repr(w) for w in valid_workflows)}"
+            f"{', '.join(repr(w) for w in WORKFLOW_VALUES)}"
         )
 
     client = get_client()
