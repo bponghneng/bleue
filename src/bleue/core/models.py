@@ -6,10 +6,10 @@ from typing import Literal, Optional
 from pydantic import BaseModel, Field, field_validator
 
 # Workflow type constants
-WORKFLOW_VALUES = [None, "main", "patch"]
+WORKFLOW_VALUES = (None, "main", "patch")
 
 # Valid worker ID constants
-WORKER_IDS = [
+WORKER_IDS = (
     None,
     "alleycat-1",
     "alleycat-2",
@@ -26,7 +26,7 @@ WORKER_IDS = [
     "xwing-1",
     "xwing-2",
     "xwing-3",
-]
+)
 
 
 class BleueIssue(BaseModel):
