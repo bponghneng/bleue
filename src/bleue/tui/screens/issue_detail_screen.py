@@ -1,5 +1,4 @@
 import logging
-from typing import List, Optional
 
 from textual import work
 from textual.app import ComposeResult
@@ -35,11 +34,11 @@ class IssueDetailScreen(Screen):
     ]
 
     issue_id: int
-    issue: reactive[Optional[BleueIssue]] = reactive(None)
-    comments: reactive[List[BleueComment]] = reactive([])
+    issue: reactive[BleueIssue | None] = reactive(None)
+    comments: reactive[list[BleueComment]] = reactive([])
     loading: reactive[bool] = reactive(False)
     auto_refresh_active: reactive[bool] = reactive(False)
-    refresh_timer: Optional[Timer] = None
+    refresh_timer: Timer | None = None
 
     def __init__(self, issue_id: int):
         """Initialize with issue ID."""
@@ -137,7 +136,7 @@ class IssueDetailScreen(Screen):
             # Ignore errors if widget is not yet mounted or doesn't exist
             pass
 
-    def _display_data(self, issue: BleueIssue, comments: List[BleueComment]) -> None:
+    def _display_data(self, issue: BleueIssue, comments: list[BleueComment]) -> None:
         """Display issue and comments data with conditional comments visibility.
 
         Args:
@@ -254,7 +253,7 @@ Updated: {updated}
             self.handle_delete_confirmation,
         )
 
-    def handle_delete_confirmation(self, confirmed: Optional[bool]) -> None:
+    def handle_delete_confirmation(self, confirmed: bool | None) -> None:
         """Handle the result of delete confirmation."""
         if not confirmed:
             return
@@ -279,7 +278,7 @@ Updated: {updated}
         self.notify(message, severity="information")
         self.app.pop_screen()
 
-    def on_description_updated(self, updated: Optional[bool]) -> None:
+    def on_description_updated(self, updated: bool | None) -> None:
         """Callback after description edit."""
         if updated:
             self.notify("Issue description updated", severity="information")
