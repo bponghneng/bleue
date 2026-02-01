@@ -5,6 +5,29 @@ from typing import Literal, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
+# Workflow type constants
+WORKFLOW_VALUES = [None, "main", "patch"]
+
+# Valid worker ID constants
+WORKER_IDS = [
+    None,
+    "alleycat-1",
+    "alleycat-2",
+    "alleycat-3",
+    "executor-1",
+    "executor-2",
+    "executor-3",
+    "local-1",
+    "local-2",
+    "local-3",
+    "tydirium-1",
+    "tydirium-2",
+    "tydirium-3",
+    "xwing-1",
+    "xwing-2",
+    "xwing-3",
+]
+
 
 class BleueIssue(BaseModel):
     """Bleue issue model matching Supabase schema."""

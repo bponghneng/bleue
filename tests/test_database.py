@@ -19,7 +19,7 @@ from bleue.core.database import (
     update_issue_status,
     update_issue_workflow,
 )
-from bleue.core.models import BleueComment
+from bleue.core.models import BleueComment, WORKER_IDS
 
 
 @pytest.fixture
@@ -276,19 +276,9 @@ def test_create_issue_with_workflow_and_worker(mock_get_client) -> None:
     assert insert_data["assigned_to"] == "xwing-2"
 
 
-@patch("bleue.core.database.get_client")
-def test_create_issue_with_all_valid_workers(mock_get_client) -> None:
-    """Test creating issue with each valid worker ID."""
-    mock_client = Mock()
-    mock_table = Mock()
-    mock_insert = Mock()
-    mock_execute = Mock()
-
-    mock_client.table.return_value = mock_table
-    mock_table.insert.return_value = mock_insert
-    mock_get_client.return_value = mock_client
-
-    valid_worker_ids = [
+@pytest.mark.parametrize(
+    "worker_id",
+    [
         "alleycat-1",
         "alleycat-2",
         "alleycat-3",
@@ -304,38 +294,50 @@ def test_create_issue_with_all_valid_workers(mock_get_client) -> None:
         "xwing-1",
         "xwing-2",
         "xwing-3",
-    ]
-
-    for worker_id in valid_worker_ids:
-        mock_execute.data = [
-            {
-                "id": 1,
-                "description": "Test issue",
-                "status": "pending",
-                "assigned_to": worker_id,
-            }
-        ]
-        mock_insert.execute.return_value = mock_execute
-
-        issue = create_issue("Test issue description text", assigned_to=worker_id)
-        assert issue.assigned_to == worker_id
-
-
+    ],
+)
 @patch("bleue.core.database.get_client")
-def test_create_issue_rejects_invalid_worker_ids(_mock_get_client) -> None:
-    """Test that create_issue rejects invalid worker IDs."""
-    invalid_workers = [
+def test_create_issue_with_all_valid_workers(mock_get_client, worker_id) -> None:
+    """Test creating issue with each valid worker ID."""
+    mock_client = Mock()
+    mock_table = Mock()
+    mock_insert = Mock()
+    mock_execute = Mock()
+
+    mock_client.table.return_value = mock_table
+    mock_table.insert.return_value = mock_insert
+    mock_get_client.return_value = mock_client
+
+    mock_execute.data = [
+        {
+            "id": 1,
+            "description": "Test issue",
+            "status": "pending",
+            "assigned_to": worker_id,
+        }
+    ]
+    mock_insert.execute.return_value = mock_execute
+
+    issue = create_issue("Test issue description text", assigned_to=worker_id)
+    assert issue.assigned_to == worker_id
+
+
+@pytest.mark.parametrize(
+    "worker_id",
+    [
         "alleycat-4",
         "executor-4",
         "local-4",
         "xwing-4",
         "hailmary-1",
         "unknown-1",
-    ]
-
-    for worker_id in invalid_workers:
-        with pytest.raises(ValueError, match="Invalid worker ID"):
-            create_issue("Test issue description text", assigned_to=worker_id)
+    ],
+)
+@patch("bleue.core.database.get_client")
+def test_create_issue_rejects_invalid_worker_ids(_mock_get_client, worker_id) -> None:
+    """Test that create_issue rejects invalid worker IDs."""
+    with pytest.raises(ValueError, match="Invalid worker ID"):
+        create_issue("Test issue description text", assigned_to=worker_id)
 
 
 @patch("bleue.core.database.get_client")
