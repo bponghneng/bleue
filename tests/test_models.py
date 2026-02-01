@@ -46,31 +46,31 @@ def test_bleue_issue_from_supabase() -> None:
     assert issue.description == "Test issue"
 
 
-def test_bleue_issue_type_default_none():
+def test_bleue_issue_type_default_none() -> None:
     """Test that BleueIssue type defaults to None."""
     issue = BleueIssue(id=1, description="Test issue")
-    assert issue.type is None
+    assert issue.type is None, "Expected type to default to None when not provided"
 
 
-def test_bleue_issue_type_main():
+def test_bleue_issue_type_main() -> None:
     """Test BleueIssue accepts type='main'."""
     issue = BleueIssue(id=1, description="Test issue", type="main")
-    assert issue.type == "main"
+    assert issue.type == "main", "Expected type to be 'main' when explicitly provided"
 
 
-def test_bleue_issue_type_patch():
+def test_bleue_issue_type_patch() -> None:
     """Test BleueIssue accepts type='patch'."""
     issue = BleueIssue(id=1, description="Test issue", type="patch")
-    assert issue.type == "patch"
+    assert issue.type == "patch", "Expected type to be 'patch' when explicitly provided"
 
 
-def test_bleue_issue_type_invalid():
+def test_bleue_issue_type_invalid() -> None:
     """Test that BleueIssue rejects invalid type values."""
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="Input should be 'main' or 'patch'"):
         BleueIssue(id=1, description="Test issue", type="invalid")
 
 
-def test_bleue_comment_creation():
+def test_bleue_comment_creation() -> None:
     """Test basic BleueComment creation."""
     comment = BleueComment(issue_id=1, comment="Test comment")
     assert comment.issue_id == 1

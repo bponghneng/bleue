@@ -29,13 +29,13 @@ def mock_env(monkeypatch):
     monkeypatch.setenv("SUPABASE_SERVICE_ROLE_KEY", "test_key")
 
 
-def test_supabase_config_validation_success(mock_env):
+def test_supabase_config_validation_success(mock_env) -> None:
     """Test config validation with valid env vars."""
     config = SupabaseConfig()
     config.validate()  # Should not raise
 
 
-def test_supabase_config_validation_missing_url(monkeypatch):
+def test_supabase_config_validation_missing_url(monkeypatch) -> None:
     """Test config validation fails with missing URL."""
     monkeypatch.delenv("SUPABASE_URL", raising=False)
     monkeypatch.setenv("SUPABASE_SERVICE_ROLE_KEY", "test_key")
@@ -45,7 +45,7 @@ def test_supabase_config_validation_missing_url(monkeypatch):
         config.validate()
 
 
-def test_supabase_config_validation_missing_key(monkeypatch):
+def test_supabase_config_validation_missing_key(monkeypatch) -> None:
     """Test config validation fails with missing key."""
     monkeypatch.setenv("SUPABASE_URL", "https://test.supabase.co")
     monkeypatch.delenv("SUPABASE_SERVICE_ROLE_KEY", raising=False)
@@ -56,7 +56,7 @@ def test_supabase_config_validation_missing_key(monkeypatch):
 
 
 @patch("bleue.core.database.create_client")
-def test_get_client(mock_create_client, mock_env):
+def test_get_client(mock_create_client, mock_env) -> None:
     """Test get_client creates and returns client."""
     mock_client = Mock()
     mock_create_client.return_value = mock_client
@@ -73,7 +73,7 @@ def test_get_client(mock_create_client, mock_env):
 
 
 @patch("bleue.core.database.get_client")
-def test_create_issue_success(mock_get_client):
+def test_create_issue_success(mock_get_client) -> None:
     """Test successful issue creation."""
     mock_client = Mock()
     mock_table = Mock()
@@ -93,21 +93,21 @@ def test_create_issue_success(mock_get_client):
 
 
 @patch("bleue.core.database.get_client")
-def test_create_issue_empty_description(mock_get_client):
+def test_create_issue_empty_description(_mock_get_client) -> None:
     """Test creating issue with empty description fails."""
     with pytest.raises(ValueError, match="cannot be empty"):
         create_issue("")
 
 
 @patch("bleue.core.database.get_client")
-def test_create_issue_whitespace_only(mock_get_client):
+def test_create_issue_whitespace_only(_mock_get_client) -> None:
     """Test creating issue with whitespace-only description fails."""
     with pytest.raises(ValueError, match="cannot be empty"):
         create_issue("   ")
 
 
 @patch("bleue.core.database.get_client")
-def test_fetch_issue_success(mock_get_client):
+def test_fetch_issue_success(mock_get_client) -> None:
     """Test successful issue fetch."""
     mock_client = Mock()
     mock_table = Mock()
@@ -130,7 +130,7 @@ def test_fetch_issue_success(mock_get_client):
 
 
 @patch("bleue.core.database.get_client")
-def test_fetch_issue_not_found(mock_get_client):
+def test_fetch_issue_not_found(mock_get_client) -> None:
     """Test fetching non-existent issue."""
     mock_client = Mock()
     mock_table = Mock()
@@ -152,7 +152,7 @@ def test_fetch_issue_not_found(mock_get_client):
 
 
 @patch("bleue.core.database.get_client")
-def test_fetch_all_issues_success(mock_get_client):
+def test_fetch_all_issues_success(mock_get_client) -> None:
     """Test fetching all issues."""
     mock_client = Mock()
     mock_table = Mock()
@@ -177,7 +177,7 @@ def test_fetch_all_issues_success(mock_get_client):
 
 
 @patch("bleue.core.database.get_client")
-def test_create_comment_success(mock_get_client):
+def test_create_comment_success(mock_get_client) -> None:
     """Test successful comment creation."""
     mock_client = Mock()
     mock_table = Mock()
@@ -216,7 +216,7 @@ def test_create_comment_success(mock_get_client):
 
 
 @patch("bleue.core.database.get_client")
-def test_fetch_comments_success(mock_get_client):
+def test_fetch_comments_success(mock_get_client) -> None:
     """Test fetching comments for an issue."""
     mock_client = Mock()
     mock_table = Mock()
@@ -243,7 +243,7 @@ def test_fetch_comments_success(mock_get_client):
 
 
 @patch("bleue.core.database.get_client")
-def test_update_issue_status_success(mock_get_client):
+def test_update_issue_status_success(mock_get_client) -> None:
     """Test successful status update."""
     mock_client = Mock()
     mock_table = Mock()
@@ -265,7 +265,7 @@ def test_update_issue_status_success(mock_get_client):
 
 
 @patch("bleue.core.database.get_client")
-def test_update_issue_status_to_completed(mock_get_client):
+def test_update_issue_status_to_completed(mock_get_client) -> None:
     """Test updating status to completed."""
     mock_client = Mock()
     mock_table = Mock()
@@ -285,14 +285,14 @@ def test_update_issue_status_to_completed(mock_get_client):
 
 
 @patch("bleue.core.database.get_client")
-def test_update_issue_status_invalid_status(mock_get_client):
+def test_update_issue_status_invalid_status(_mock_get_client) -> None:
     """Test updating with invalid status fails."""
     with pytest.raises(ValueError, match="Invalid status"):
         update_issue_status(1, "invalid_status")
 
 
 @patch("bleue.core.database.get_client")
-def test_update_issue_status_not_found(mock_get_client):
+def test_update_issue_status_not_found(mock_get_client) -> None:
     """Test updating non-existent issue."""
     mock_client = Mock()
     mock_table = Mock()
@@ -312,7 +312,7 @@ def test_update_issue_status_not_found(mock_get_client):
 
 
 @patch("bleue.core.database.get_client")
-def test_update_issue_description_success(mock_get_client):
+def test_update_issue_description_success(mock_get_client) -> None:
     """Test successful description update."""
     mock_client = Mock()
     mock_table = Mock()
@@ -334,28 +334,28 @@ def test_update_issue_description_success(mock_get_client):
 
 
 @patch("bleue.core.database.get_client")
-def test_update_issue_description_empty(mock_get_client):
+def test_update_issue_description_empty(_mock_get_client) -> None:
     """Test updating with empty description fails."""
     with pytest.raises(ValueError, match="cannot be empty"):
         update_issue_description(1, "")
 
 
 @patch("bleue.core.database.get_client")
-def test_update_issue_description_whitespace_only(mock_get_client):
+def test_update_issue_description_whitespace_only(_mock_get_client) -> None:
     """Test updating with whitespace-only description fails."""
     with pytest.raises(ValueError, match="cannot be empty"):
         update_issue_description(1, "   ")
 
 
 @patch("bleue.core.database.get_client")
-def test_update_issue_description_too_short(mock_get_client):
+def test_update_issue_description_too_short(_mock_get_client) -> None:
     """Test updating with too short description fails."""
     with pytest.raises(ValueError, match="at least 10 characters"):
         update_issue_description(1, "Short")
 
 
 @patch("bleue.core.database.get_client")
-def test_update_issue_description_too_long(mock_get_client):
+def test_update_issue_description_too_long(_mock_get_client) -> None:
     """Test updating with too long description fails."""
     long_description = "x" * 10001
     with pytest.raises(ValueError, match="cannot exceed 10000 characters"):
@@ -363,7 +363,7 @@ def test_update_issue_description_too_long(mock_get_client):
 
 
 @patch("bleue.core.database.get_client")
-def test_update_issue_description_not_found(mock_get_client):
+def test_update_issue_description_not_found(mock_get_client) -> None:
     """Test updating description of non-existent issue."""
     mock_client = Mock()
     mock_table = Mock()
@@ -383,7 +383,7 @@ def test_update_issue_description_not_found(mock_get_client):
 
 
 @patch("bleue.core.database.get_client")
-def test_delete_issue_success(mock_get_client):
+def test_delete_issue_success(mock_get_client) -> None:
     """Test successful issue deletion."""
     mock_client = Mock()
     mock_table = Mock()
@@ -405,7 +405,7 @@ def test_delete_issue_success(mock_get_client):
 
 
 @patch("bleue.core.database.get_client")
-def test_delete_issue_not_found(mock_get_client):
+def test_delete_issue_not_found(mock_get_client) -> None:
     """Test deleting non-existent issue."""
     mock_client = Mock()
     mock_table = Mock()
@@ -425,7 +425,7 @@ def test_delete_issue_not_found(mock_get_client):
 
 
 @patch("bleue.core.database.get_client")
-def test_delete_issue_with_comments(mock_get_client):
+def test_delete_issue_with_comments(mock_get_client) -> None:
     """Test deleting issue cascades to comments.
 
     Note: This test verifies the delete operation is called correctly.
@@ -455,7 +455,7 @@ def test_delete_issue_with_comments(mock_get_client):
 
 @patch("bleue.core.database.fetch_issue")
 @patch("bleue.core.database.get_client")
-def test_update_issue_assignment_success(mock_get_client, mock_fetch_issue):
+def test_update_issue_assignment_success(mock_get_client, mock_fetch_issue) -> None:
     """Test successful worker assignment."""
     # Mock fetch_issue to return a pending issue
     mock_issue = Mock()
@@ -487,14 +487,14 @@ def test_update_issue_assignment_success(mock_get_client, mock_fetch_issue):
     assert issue.id == 1, "expected issue.id to be 1"
     assert issue.assigned_to == "executor-1", "expected assigned_to to be 'executor-1'"
     assert mock_table.update.call_count == 1, "expected mock_table.update to be called once"
-    assert mock_table.update.call_args.args[0] == {"assigned_to": "executor-1"}, (
-        "expected mock_table.update called with assigned_to payload"
-    )
+    assert mock_table.update.call_args.args[0] == {
+        "assigned_to": "executor-1"
+    }, "expected mock_table.update called with assigned_to payload"
 
 
 @patch("bleue.core.database.fetch_issue")
 @patch("bleue.core.database.get_client")
-def test_update_issue_assignment_to_none(mock_get_client, mock_fetch_issue):
+def test_update_issue_assignment_to_none(mock_get_client, mock_fetch_issue) -> None:
     """Test unassigning a worker (setting to None)."""
     # Mock fetch_issue to return a pending issue
     mock_issue = Mock()
@@ -529,7 +529,7 @@ def test_update_issue_assignment_to_none(mock_get_client, mock_fetch_issue):
 
 
 @patch("bleue.core.database.fetch_issue")
-def test_update_issue_assignment_rejects_started_issue(mock_fetch_issue):
+def test_update_issue_assignment_rejects_started_issue(mock_fetch_issue) -> None:
     """Test that assignment is rejected for started issues."""
     # Mock fetch_issue to return a started issue
     mock_issue = Mock()
@@ -541,7 +541,7 @@ def test_update_issue_assignment_rejects_started_issue(mock_fetch_issue):
 
 
 @patch("bleue.core.database.fetch_issue")
-def test_update_issue_assignment_rejects_completed_issue(mock_fetch_issue):
+def test_update_issue_assignment_rejects_completed_issue(mock_fetch_issue) -> None:
     """Test that assignment is rejected for completed issues."""
     # Mock fetch_issue to return a completed issue
     mock_issue = Mock()
@@ -553,14 +553,14 @@ def test_update_issue_assignment_rejects_completed_issue(mock_fetch_issue):
 
 
 @patch("bleue.core.database.get_client")
-def test_update_issue_assignment_rejects_invalid_worker(mock_get_client):
+def test_update_issue_assignment_rejects_invalid_worker(_mock_get_client) -> None:
     """Test that assignment is rejected for invalid worker IDs."""
     with pytest.raises(ValueError, match="Invalid worker ID"):
         update_issue_assignment(1, "invalid-worker")
 
 
 @patch("bleue.core.database.fetch_issue")
-def test_update_issue_assignment_nonexistent_issue(mock_fetch_issue):
+def test_update_issue_assignment_nonexistent_issue(mock_fetch_issue) -> None:
     """Test assignment fails for non-existent issue."""
     mock_fetch_issue.side_effect = ValueError("Issue not found")
 
@@ -570,7 +570,7 @@ def test_update_issue_assignment_nonexistent_issue(mock_fetch_issue):
 
 @patch("bleue.core.database.fetch_issue")
 @patch("bleue.core.database.get_client")
-def test_update_issue_assignment_new_workers(mock_get_client, mock_fetch_issue):
+def test_update_issue_assignment_new_workers(mock_get_client, mock_fetch_issue) -> None:
     """Test assignment to new expanded worker pool IDs."""
     # Mock fetch_issue to return a pending issue
     mock_issue = Mock()
@@ -618,7 +618,7 @@ def test_update_issue_assignment_new_workers(mock_get_client, mock_fetch_issue):
 
 
 @patch("bleue.core.database.get_client")
-def test_update_issue_assignment_rejects_invalid_new_worker(mock_get_client):
+def test_update_issue_assignment_rejects_invalid_new_worker(_mock_get_client) -> None:
     """Test that assignment is rejected for invalid worker IDs not in expanded pool."""
     invalid_workers = [
         "alleycat-4",
@@ -635,7 +635,7 @@ def test_update_issue_assignment_rejects_invalid_new_worker(mock_get_client):
 
 
 @patch("bleue.core.database.get_client")
-def test_update_issue_workflow_main(mock_get_client):
+def test_update_issue_workflow_main(mock_get_client) -> None:
     """Test successful workflow update to 'main'."""
     mock_client = Mock()
     mock_table = Mock()
@@ -653,13 +653,13 @@ def test_update_issue_workflow_main(mock_get_client):
     mock_get_client.return_value = mock_client
 
     issue = update_issue_workflow(1, "main")
-    assert issue.id == 1
-    assert issue.type == "main"
+    assert issue.id == 1, "Expected issue ID to match the updated issue"
+    assert issue.type == "main", "Expected workflow type to be updated to 'main'"
     mock_table.update.assert_called_once_with({"type": "main"})
 
 
 @patch("bleue.core.database.get_client")
-def test_update_issue_workflow_patch(mock_get_client):
+def test_update_issue_workflow_patch(mock_get_client) -> None:
     """Test successful workflow update to 'patch'."""
     mock_client = Mock()
     mock_table = Mock()
@@ -677,13 +677,13 @@ def test_update_issue_workflow_patch(mock_get_client):
     mock_get_client.return_value = mock_client
 
     issue = update_issue_workflow(2, "patch")
-    assert issue.id == 2
-    assert issue.type == "patch"
+    assert issue.id == 2, "Expected issue ID to match the updated issue"
+    assert issue.type == "patch", "Expected workflow type to be updated to 'patch'"
     mock_table.update.assert_called_once_with({"type": "patch"})
 
 
 @patch("bleue.core.database.get_client")
-def test_update_issue_workflow_none(mock_get_client):
+def test_update_issue_workflow_none(mock_get_client) -> None:
     """Test clearing workflow by setting to None."""
     mock_client = Mock()
     mock_table = Mock()
@@ -699,20 +699,20 @@ def test_update_issue_workflow_none(mock_get_client):
     mock_get_client.return_value = mock_client
 
     issue = update_issue_workflow(1, None)
-    assert issue.id == 1
-    assert issue.type is None
+    assert issue.id == 1, "Expected issue ID to match the updated issue"
+    assert issue.type is None, "Expected workflow type to be cleared (None)"
     mock_table.update.assert_called_once_with({"type": None})
 
 
 @patch("bleue.core.database.get_client")
-def test_update_issue_workflow_invalid(mock_get_client):
+def test_update_issue_workflow_invalid(_mock_get_client) -> None:
     """Test updating with invalid workflow value fails."""
     with pytest.raises(ValueError, match="Invalid workflow"):
         update_issue_workflow(1, "invalid_workflow")
 
 
 @patch("bleue.core.database.get_client")
-def test_update_issue_workflow_not_found(mock_get_client):
+def test_update_issue_workflow_not_found(mock_get_client) -> None:
     """Test updating workflow for non-existent issue."""
     mock_client = Mock()
     mock_table = Mock()
@@ -732,7 +732,7 @@ def test_update_issue_workflow_not_found(mock_get_client):
 
 
 @patch("bleue.core.database.get_client")
-def test_update_issue_workflow_database_error(mock_get_client):
+def test_update_issue_workflow_database_error(mock_get_client) -> None:
     """Test handling of database API errors during workflow update."""
     mock_client = Mock()
     mock_table = Mock()
