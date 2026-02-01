@@ -13,7 +13,9 @@ class BleueIssue(BaseModel):
     title: Optional[str] = None
     description: str = Field(..., min_length=1)
     status: Literal["pending", "started", "completed"] = "pending"
-    type: Optional[Literal["main", "patch"]] = None
+    type: Optional[Literal["main", "patch"]] = Field(
+        None, description="Workflow type: 'main' or 'patch', None if unspecified"
+    )
     assigned_to: Optional[
         Literal[
             "alleycat-1",
