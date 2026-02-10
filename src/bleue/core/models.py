@@ -38,11 +38,7 @@ class BleueIssue(BaseModel):
 
     id: int
     title: Optional[str] = None
-    description: str = Field(
-        ...,
-        min_length=ISSUE_DESCRIPTION_MIN_LENGTH,
-        max_length=ISSUE_DESCRIPTION_MAX_LENGTH,
-    )
+    description: str = Field(...)
     status: Literal["pending", "started", "completed"] = "pending"
     type: Optional[Literal["main", "patch"]] = Field(
         None, description="Workflow type: 'main' or 'patch', None if unspecified"
@@ -73,7 +69,16 @@ class BleueIssue(BaseModel):
     @classmethod
     def trim_description(cls, v: str) -> str:
         """Trim whitespace from description."""
-        return v.strip()
+        trimmed = v.strip()
+        if len(trimmed) < ISSUE_DESCRIPTION_MIN_LENGTH:
+            raise ValueError(
+                f"Issue description must be at least {ISSUE_DESCRIPTION_MIN_LENGTH} characters"
+            )
+        if len(trimmed) > ISSUE_DESCRIPTION_MAX_LENGTH:
+            raise ValueError(
+                f"Issue description cannot exceed {ISSUE_DESCRIPTION_MAX_LENGTH} characters"
+            )
+        return trimmed
 
     @field_validator("status", mode="before")
     @classmethod
@@ -92,7 +97,7 @@ class BleueComment(BaseModel):
 
     id: Optional[int] = None
     issue_id: int
-    comment: str = Field(..., min_length=1)
+    comment: str = Field(...)
     raw: dict = Field(default_factory=dict)
     source: Optional[str] = None
     type: Optional[str] = None
@@ -102,4 +107,7 @@ class BleueComment(BaseModel):
     @classmethod
     def trim_comment(cls, v: str) -> str:
         """Trim whitespace from comment."""
-        return v.strip()
+        trimmed = v.strip()
+        if not trimmed:
+            raise ValueError("Comment cannot be empty")
+        return trimmed

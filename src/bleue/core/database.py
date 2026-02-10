@@ -259,13 +259,14 @@ def create_issue(
     if description_length == 0:
         raise ValueError("Issue description cannot be empty")
 
-    if (
-        description_length < ISSUE_DESCRIPTION_MIN_LENGTH
-        or description_length > ISSUE_DESCRIPTION_MAX_LENGTH
-    ):
+    if description_length < ISSUE_DESCRIPTION_MIN_LENGTH:
         raise ValueError(
-            "Issue description must be between "
-            f"{ISSUE_DESCRIPTION_MIN_LENGTH} and {ISSUE_DESCRIPTION_MAX_LENGTH} characters"
+            f"Issue description must be at least {ISSUE_DESCRIPTION_MIN_LENGTH} characters"
+        )
+
+    if description_length > ISSUE_DESCRIPTION_MAX_LENGTH:
+        raise ValueError(
+            f"Issue description cannot exceed {ISSUE_DESCRIPTION_MAX_LENGTH} characters"
         )
 
     # Validate workflow parameter
