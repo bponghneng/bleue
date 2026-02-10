@@ -591,8 +591,8 @@ def test_update_issue_description_too_short(_mock_get_client) -> None:
 @patch("bleue.core.database.get_client")
 def test_update_issue_description_too_long(_mock_get_client) -> None:
     """Test updating with too long description fails."""
-    long_description = "x" * 10001
-    with pytest.raises(ValueError, match="cannot exceed 10000 characters"):
+    long_description = "x" * 20001
+    with pytest.raises(ValueError, match="cannot exceed 20000 characters"):
         update_issue_description(1, long_description)
 
 

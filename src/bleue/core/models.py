@@ -8,6 +8,10 @@ from pydantic import BaseModel, Field, field_validator
 # Workflow type constants
 WORKFLOW_VALUES = (None, "main", "patch")
 
+# Issue description length constraints
+ISSUE_DESCRIPTION_MIN_LENGTH = 10
+ISSUE_DESCRIPTION_MAX_LENGTH = 20000
+
 # Valid worker ID constants
 WORKER_IDS = (
     None,

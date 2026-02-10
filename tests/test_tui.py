@@ -288,14 +288,14 @@ def test_issue_form_validation_too_short():
 
 
 def test_issue_form_validation_too_long():
-    """Test IssueForm rejects description longer than 10,000 characters."""
+    """Test IssueForm rejects description longer than 20,000 characters."""
     save_callback = Mock()
     form = IssueForm(on_save_callback=save_callback)
 
     # Mock the screen and TextArea
     mock_screen = Mock()
     mock_textarea = Mock()
-    mock_textarea.text = "x" * 10001  # 10,001 characters
+    mock_textarea.text = "x" * 20001  # 20,001 characters
     mock_input = Mock()
     mock_input.value = "Test title"
 
@@ -309,7 +309,7 @@ def test_issue_form_validation_too_long():
         # Verify callback was NOT called
         save_callback.assert_not_called()
         mock_screen.notify.assert_called_once()
-        assert "10,000 characters" in mock_screen.notify.call_args[0][0]
+        assert "20,000 characters" in mock_screen.notify.call_args[0][0]
 
 
 def test_issue_form_validation_valid_description():

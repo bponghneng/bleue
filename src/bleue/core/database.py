@@ -12,7 +12,14 @@ from postgrest.exceptions import APIError
 from supabase import Client, create_client
 from supabase.lib.client_options import SyncClientOptions
 
-from bleue.core.models import BleueComment, BleueIssue, WORKFLOW_VALUES, WORKER_IDS
+from bleue.core.models import (
+    ISSUE_DESCRIPTION_MAX_LENGTH,
+    ISSUE_DESCRIPTION_MIN_LENGTH,
+    WORKER_IDS,
+    WORKFLOW_VALUES,
+    BleueComment,
+    BleueIssue,
+)
 
 
 def _find_dotenv() -> Path | None:
@@ -252,8 +259,14 @@ def create_issue(
     if description_length == 0:
         raise ValueError("Issue description cannot be empty")
 
-    if description_length < 10 or description_length > 10000:
-        raise ValueError("Issue description must be between 10 and 10000 characters")
+    if (
+        description_length < ISSUE_DESCRIPTION_MIN_LENGTH
+        or description_length > ISSUE_DESCRIPTION_MAX_LENGTH
+    ):
+        raise ValueError(
+            "Issue description must be between "
+            f"{ISSUE_DESCRIPTION_MIN_LENGTH} and {ISSUE_DESCRIPTION_MAX_LENGTH} characters"
+        )
 
     # Validate workflow parameter
     if workflow not in WORKFLOW_VALUES:
@@ -360,11 +373,15 @@ def update_issue_description(issue_id: int, description: str) -> BleueIssue:
     if not description_clean:
         raise ValueError("Issue description cannot be empty")
 
-    if len(description_clean) < 10:
-        raise ValueError("Issue description must be at least 10 characters")
+    if len(description_clean) < ISSUE_DESCRIPTION_MIN_LENGTH:
+        raise ValueError(
+            f"Issue description must be at least {ISSUE_DESCRIPTION_MIN_LENGTH} characters"
+        )
 
-    if len(description_clean) > 10000:
-        raise ValueError("Issue description cannot exceed 10000 characters")
+    if len(description_clean) > ISSUE_DESCRIPTION_MAX_LENGTH:
+        raise ValueError(
+            f"Issue description cannot exceed {ISSUE_DESCRIPTION_MAX_LENGTH} characters"
+        )
 
     client = get_client()
 
