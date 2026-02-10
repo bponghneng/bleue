@@ -2,6 +2,8 @@ from textual.app import ComposeResult
 from textual.containers import Container, Horizontal
 from textual.widgets import Button, Input, Rule, TextArea
 
+from bleue.core.models import ISSUE_DESCRIPTION_MAX_LENGTH, ISSUE_DESCRIPTION_MIN_LENGTH
+
 
 class IssueForm(Container):
     """Reusable form component for issue creation and editing.
@@ -74,12 +76,18 @@ class IssueForm(Container):
             self.screen.notify("Description cannot be empty", severity="warning")
             return
 
-        if len(description) < 10:
-            self.screen.notify("Description must be at least 10 characters", severity="warning")
+        if len(description) < ISSUE_DESCRIPTION_MIN_LENGTH:
+            self.screen.notify(
+                f"Description must be at least {ISSUE_DESCRIPTION_MIN_LENGTH} characters",
+                severity="warning",
+            )
             return
 
-        if len(description) > 10000:
-            self.screen.notify("Description cannot exceed 10,000 characters", severity="warning")
+        if len(description) > ISSUE_DESCRIPTION_MAX_LENGTH:
+            self.screen.notify(
+                f"Description cannot exceed {ISSUE_DESCRIPTION_MAX_LENGTH:,} characters",
+                severity="warning",
+            )
             return
 
         # Trigger callback if provided
