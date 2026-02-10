@@ -398,8 +398,8 @@ def test_fetch_all_issues_success(mock_get_client) -> None:
     mock_table.select.return_value = mock_select
     mock_select.order.return_value = mock_order
     mock_execute.data = [
-        {"id": 1, "description": "Issue 1", "status": "pending"},
-        {"id": 2, "description": "Issue 2", "status": "completed"},
+        {"id": 1, "description": "Issue 1 valid", "status": "pending"},
+        {"id": 2, "description": "Issue 2 valid", "status": "completed"},
     ]
     mock_order.execute.return_value = mock_execute
     mock_get_client.return_value = mock_client

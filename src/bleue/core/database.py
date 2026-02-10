@@ -360,7 +360,7 @@ def update_issue_description(issue_id: int, description: str) -> BleueIssue:
     Args:
         issue_id: The ID of the issue to update.
         description: The new description text. Will be trimmed of leading/trailing whitespace.
-                    Must be between 10 and 10000 characters after trimming.
+                    Must be between 10 and 20000 characters after trimming.
 
     Returns:
         BleueIssue: The updated issue with new description and updated timestamp.

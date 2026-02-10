@@ -38,7 +38,11 @@ class BleueIssue(BaseModel):
 
     id: int
     title: Optional[str] = None
-    description: str = Field(..., min_length=1)
+    description: str = Field(
+        ...,
+        min_length=ISSUE_DESCRIPTION_MIN_LENGTH,
+        max_length=ISSUE_DESCRIPTION_MAX_LENGTH,
+    )
     status: Literal["pending", "started", "completed"] = "pending"
     type: Optional[Literal["main", "patch"]] = Field(
         None, description="Workflow type: 'main' or 'patch', None if unspecified"
