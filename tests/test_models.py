@@ -28,7 +28,7 @@ def test_bleue_issue_empty_description_validation() -> None:
 
 def test_bleue_issue_default_status() -> None:
     """Test default status is set to pending."""
-    issue = BleueIssue(id=1, description="Test")
+    issue = BleueIssue(id=1, description="Test issue")
     assert issue.status == "pending"
 
 
